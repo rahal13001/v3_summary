@@ -8,7 +8,7 @@ use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
-use Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Auth\EditProfile;
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->registration()
             ->passwordReset()
             ->emailVerification()
-            ->profile(EditProfile::class)
+            ->profile(EditProfile::class, isSimple: true)
             ->brandLogo(asset('img/summarylight.png'))
             ->darkModeBrandLogo(asset('img/summarydark.png'))
             ->brandLogoHeight('4rem')            
