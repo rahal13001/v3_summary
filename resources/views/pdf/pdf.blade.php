@@ -206,7 +206,7 @@
       <div style="margin: 30px 0; text-align: center;">
         <div style="margin-top: 30px; margin-bottom:30px;"><h4>Dokumentasi</h4></div>
        
-       <img src="{{ asset('storage/'.$report->documentation->dokumentasi1) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
+       <img src="{{ asset($report->documentation->dokumentasi1) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
         {{-- <p style="margin-top: 10px;">Gambar 1: Judul Gambar 1</p> --}}
       </div>
 
@@ -214,7 +214,7 @@
       @if ($report->documentation->dokumentasi2 != null)
         
       <div style="margin: 30px 0; text-align: center;">
-        <img src="{{ asset('storage/'.$report->documentation->dokumentasi2) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
+        <img src="{{ asset($report->documentation->dokumentasi2) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
         {{-- <p style="margin-top: 10px;">Gambar 2: Judul Gambar 2</p> --}}
       </div>
       @endif
@@ -222,7 +222,7 @@
       <!-- Dokumentasi Gambar 3 -->
       @if ($report->documentation->dokumentasi3 != null)
       <div style="margin: 30px 0; text-align: center;">
-        <img src="{{ asset('storage/'.$report->documentation->dokumentasi3) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
+        <img src="{{ asset($report->documentation->dokumentasi3) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
         {{-- <p style="margin-top: 10px;">Gambar 3: Judul Gambar 3</p> --}}
       </div>
       @endif
