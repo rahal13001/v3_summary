@@ -467,8 +467,13 @@ class ReportResource extends Resource
 
                     Section::make('Informasi Pelaksanaan')
                         ->schema([
-                            How::make('how')
-                                ->label('How'),
+                            TextEntry::make('how')
+                            // ->html()
+                            ->formatStateUsing(fn (string $state): View => view(
+                                'infolists.components.how',
+                                ['state' => $state],
+                            ))
+                            ->label('How'),
                             TextEntry::make('created_at')
                                 ->date('d-m-Y')
                                 ->weight(FontWeight::Bold)

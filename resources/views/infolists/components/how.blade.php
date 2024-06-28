@@ -1,6 +1,5 @@
-<x-dynamic-component :component="$getEntryWrapperView()" :entry="$entry">
-    <div>
-            <style>
+<div>
+    <style>
        /* General Styling */
        .filament-display-how {
             font-family: Arial, sans-serif;
@@ -137,8 +136,7 @@
     </style>
 
     <div class="filament-display-how">
-        {!! $getState() !!}
+        {!! $state !!}
     </div>
 
-    </div>
-</x-dynamic-component>
+</div>
