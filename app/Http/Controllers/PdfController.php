@@ -90,7 +90,7 @@ class PdfController extends Controller
                     ->encoding(new Encoding('UTF-8'))
                     ->size(150)
                     ->logoPath('../public/img/logokkp.jpg')
-                    ->logoResizeToWidth(50)
+                    ->logoResizeToWidth(30)
                     ->margin(10)
                     ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
                     ->validateResult(false)

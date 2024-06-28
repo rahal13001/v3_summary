@@ -1,6 +1,7 @@
 <html>
 <head>
-  <link rel="shortcut icon" href="{{ asset('img/logoweb.png') }}">
+  <link rel="icon" href="{{ asset('img/logoweb.png') }}">
+
   <title>Ekspor PDF</title>
   
   <style>
