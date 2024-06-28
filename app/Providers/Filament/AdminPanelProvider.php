@@ -36,14 +36,16 @@ class AdminPanelProvider extends PanelProvider
             ->profile(EditProfile::class)
             ->brandLogo(asset('img/summarylight.png'))
             ->darkModeBrandLogo(asset('img/summarydark.png'))
-            ->brandLogoHeight('4rem')
-            
+            ->brandLogoHeight('4rem')            
             ->colors([
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->favicon(asset('img/logoweb.png'))
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->databaseNotifications()
+            ->unsavedChangesAlerts()
+            ->databaseTransactions()
             ->pages([
                 // Pages\Dashboard::class,
             ])
