@@ -62,7 +62,8 @@ class User extends Authenticatable implements HasAvatar
     }
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->avatar_url ? Storage::url($this->avatar_url) : null ;
+        // return $this->avatar_url ? Storage::url($this->avatar_url) : null ;
+        return $this->avatar_url ? asset('foto-pegawai/'.$this->avatar_url) : null;
     }
 
     public function reports()
