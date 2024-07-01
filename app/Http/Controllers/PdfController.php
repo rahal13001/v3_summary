@@ -77,33 +77,35 @@ class PdfController extends Controller
 
                 // $qrdata = '<img src='.$imageName.'>';
 
-                if ($report->kode) {
-                    $qrdata = 'http://summary.timurbersinar.com/cek-ttd/'.$report->slug;
-                }
-                else {
-                    $qrdata = "no data"; // Fallback or alternative data for the QR code
-                }
+                //jika ttd dibuat QR
+
+                // if ($report->kode) {
+                //     $qrdata = 'http://summary.timurbersinar.com/cek-ttd/'.$report->slug;
+                // }
+                // else {
+                //     $qrdata = "no data"; // Fallback or alternative data for the QR code
+                // }
                 
-                $qr_ttd = Builder::create()
-                    ->writer(new PngWriter())
-                    ->data($qrdata) // Use the base64-encoded image or fallback data
-                    ->encoding(new Encoding('UTF-8'))
-                    ->size(150)
-                    ->logoPath('../public/img/logokkp.jpg')
-                    ->logoResizeToWidth(30)
-                    ->margin(10)
-                    ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
-                    ->validateResult(false)
-                    ->build();
+                // $qr_ttd = Builder::create()
+                //     ->writer(new PngWriter())
+                //     ->data($qrdata) // Use the base64-encoded image or fallback data
+                //     ->encoding(new Encoding('UTF-8'))
+                //     ->size(150)
+                //     ->logoPath('../public/img/logokkp.jpg')
+                //     ->logoResizeToWidth(30)
+                //     ->margin(10)
+                //     ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+                //     ->validateResult(false)
+                //     ->build();
                            
 
 
         $q_report = $qr_report->getDataUri();
         $q_lainnya = $qr_lainnya->getDataUri();
         $q_st = $qr_st->getDataUri();
-        $q_ttd = $qr_ttd->getDataUri();
+        // $q_ttd = $qr_ttd->getDataUri();
 
-        return Pdf::loadView('pdf.pdf', compact('report', 'q_report', 'q_lainnya', 'q_st', 'q_ttd'))
+        return Pdf::loadView('pdf.pdf', compact('report', 'q_report', 'q_lainnya', 'q_st'))
             ->stream($report->what. '.pdf');
     }
 }

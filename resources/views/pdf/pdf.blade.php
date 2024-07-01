@@ -157,7 +157,7 @@
             @if (!$loop->first && $loop->last)
               &
             @endif
-            @if(!$loop->last)
+            @if(!$loop->first && !$loop->last)
                 ,
               @endif
             {{ $iku->nama_iku }} (IKU : {{ $iku->nomor_iku }})
@@ -189,7 +189,7 @@
               <br>
               <br>
               <div>
-                <img src="{!!$q_ttd!!}" alt="" srcset="" style="width: 40%">
+                <img src="{{$report->kode}}" alt="" srcset="" style="width: 60%">
               </div>
               <br>
             @else
