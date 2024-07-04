@@ -11,12 +11,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
+use Filament\Models\Contracts\FilamentUser;
 
-class User extends Authenticatable implements HasAvatar
+class User extends Authenticatable implements HasAvatar, FilamentUser
 {
     use HasFactory, Notifiable;
     use HasPanelShield;
     use HasRoles;
+
+
 
 
     /**
@@ -35,7 +38,8 @@ class User extends Authenticatable implements HasAvatar
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return str_ends_with($this->email, 'https://summary.timurbersinar.com');
+        // return str_ends_with($this->email, 'http://summary4.test/');
+        return $this->hasRole(['super_admin', 'admin', 'writer', 'panel_user']);
     }
 
     /**
