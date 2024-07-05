@@ -1,7 +1,9 @@
 @php
    $users = \App\Models\User::query()
     ->withCount(['reports' => function($query){
-        $query->whereMonth('when', now()->month);
+        $query
+        ->whereYear('when', date('Y'))
+        ->whereMonth('when', date('m'));
     }])
     ->orderByDesc('reports_count')
     ->limit(5)
