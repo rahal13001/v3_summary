@@ -138,7 +138,9 @@ class ReportResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('total_peserta')
                     ->required()
-                    ->maxLength(255),
+                    ->numeric()
+                    ->suffix('Orang')
+                    ->maxLength(10),
                 Forms\Components\Radio::make('total_wanita')
                     ->label('Total Wanita')
                     ->options([
@@ -171,8 +173,8 @@ class ReportResource extends Resource
                             ->visibility('public')
                             ->image()
                             ->openable()
-                            ->maxSize(3300)
-                            ->columnSpanFull(),
+                            ->maxSize(3300),
+                            
                         
                         FileUpload::make('dokumentasi2')
                             ->label('Dokumentasi Kegiatan 2')
