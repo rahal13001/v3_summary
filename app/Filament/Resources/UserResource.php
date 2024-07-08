@@ -20,8 +20,8 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
     protected static ?string $slug = 'pengguna';
-    protected static ?int $navigationSort = 7;
-    protected static ?string $navigationGroup = 'Pelindung';
+    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Admin Area';
 
     public static function form(Form $form): Form
     {
@@ -32,7 +32,7 @@ class UserResource extends Resource
                     ->label('Nama')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('nip')
-                    ->label('NIP')
+                    ->label('NIP / ID')
                     ->maxLength(18),
                 Forms\Components\TextInput::make('jabatan')
                     ->label('Jabatan')
