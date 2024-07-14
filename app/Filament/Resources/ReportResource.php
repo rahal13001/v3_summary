@@ -358,20 +358,20 @@ class ReportResource extends Resource
             if ($dokumentasi->dokumentasi1){
                 $documentationSchema[] = ImageEntry::make('documentation.dokumentasi1')
                     ->height(300)
-                    ->url(asset('storage/' . $dokumentasi->dokumentasi1), '_blank')
+                    ->url(asset( $dokumentasi->dokumentasi1), '_blank')
                     ->label('Dokumentasi Kegiatan 2');
             }
             if ($dokumentasi->dokumentasi2){
                 $documentationSchema[] = ImageEntry::make('documentation.dokumentasi2')
                     ->height(300)
-                    ->url(asset('storage/' . $dokumentasi->dokumentasi2), '_blank')
+                    ->url(asset( $dokumentasi->dokumentasi2), '_blank')
                     ->label('Dokumentasi Kegiatan 2');
             }
 
             if ($dokumentasi->dokumentasi3){
                 $documentationSchema[] = ImageEntry::make('documentation.dokumentasi3')
                     ->height(300)
-                    ->url(asset('storage/' . $dokumentasi->dokumentasi3), '_blank')
+                    ->url(asset( $dokumentasi->dokumentasi3), '_blank')
                     ->label('Dokumentasi Kegiatan 3');
             }
 
@@ -381,7 +381,7 @@ class ReportResource extends Resource
                     ->size(IconEntry\IconEntrySize::Large)
                     ->icon('heroicon-o-eye')
                     ->color('info')
-                    ->url(asset('storage/' . $dokumentasi->st), '_blank');
+                    ->url(asset( $dokumentasi->st), '_blank');
             }
 
             if ($dokumentasi->lainnya){
@@ -391,7 +391,7 @@ class ReportResource extends Resource
                     ->size(IconEntry\IconEntrySize::Large)
                     ->icon('heroicon-o-eye')
                     ->color('info')
-                    ->url(asset('storage/' . $dokumentasi->lainnya), '_blank');
+                    ->url(asset( $dokumentasi->lainnya), '_blank');
             }
 
 
