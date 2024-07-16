@@ -10,6 +10,8 @@ class IndicatorReport extends Pivot
 {
     use HasFactory;
 
+    protected $table = 'indicator_reports';
+
     protected $fillable = [
         'report_id',
         'indicator_id',

@@ -269,6 +269,7 @@ class ReportResource extends Resource
                         ->searchable()
                         ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->paginated([10, 25, 50, 75])
             ->defaultSort('when', 'desc')
             ->filters([
                 Filter::make('when')
@@ -345,6 +346,7 @@ class ReportResource extends Resource
                 ]),
             ]);
     }
+
 
     public static function infolist(Infolist $infolist): Infolist
     {
@@ -538,4 +540,6 @@ class ReportResource extends Resource
             return "Report";
         }
     }
+
+
 }

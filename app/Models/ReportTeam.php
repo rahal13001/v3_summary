@@ -10,6 +10,8 @@ class ReportTeam extends Pivot
 {
     use HasFactory;
 
+    protected $table = 'report_teams';
+
     protected $fillable = [
         'report_id',
         'team_id',
