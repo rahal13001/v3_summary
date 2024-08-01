@@ -28,7 +28,8 @@ class ReportExporter extends Exporter
             ExportColumn::make('tanggal_selesai')->label('Tanggal Selesai'),
             ExportColumn::make('where')->label('Where'),
             ExportColumn::make('who')->label('Who'),
-            ExportColumn::make('how')->label('How'),
+            ExportColumn::make('how')->label('How')
+                ->limit(32000),
             ExportColumn::make('penyelenggara')->label('Penyelenggara'),
             ExportColumn::make('total_peserta')->label('Total Peserta'),
             ExportColumn::make('total_wanita')->label('Persentase Wanita')->suffix('%'),
