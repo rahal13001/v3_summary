@@ -295,15 +295,9 @@ class ReportResource extends Resource
                         );
                 })->indicator('when'),
                 
-                SelectFilter::make('indicators.indicators_id')
-                    // ->relationship('indicators', 'nama_iku')
+                SelectFilter::make('indicators')
+                    ->relationship('indicators', 'nama_iku')
                     ->label('IKU')
-                    ->options(
-                        Indicator::pluck('nama_iku', 'nama_iku')
-                            ->map(function ($namaIku) {
-                                return $namaIku . ' (Tahun ' . Indicator::where('nama_iku', $namaIku)->first()->tahun_iku . ')';
-                            })
-                    )
                     ->preload()
                     ->multiple()
                     ->searchable()
