@@ -296,7 +296,7 @@ class ReportResource extends Resource
                 })->indicator('when'),
                 
                 SelectFilter::make('indicators')
-                    ->relationship('indicators', 'nama_iku')
+                    // ->relationship('indicators', 'nama_iku')
                     ->label('IKU')
                     ->options(
                         Indicator::pluck('nama_iku', 'tahun_iku')
