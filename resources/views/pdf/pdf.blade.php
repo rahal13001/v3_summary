@@ -109,7 +109,7 @@
       <tr>
         <td class="keterangan">Nomor ST</td>
         <td class="titik">:</td>
-        <td class="isi">{!! nl2br(chunk_split($report->no_st, 60, "\n")) !!}</td>
+        <td class="isi">{!! nl2br(chunk_split($report->no_st, 50, "\n")) !!}</td>
       </tr>
 
       <!-- Judul Kegiatan -->
