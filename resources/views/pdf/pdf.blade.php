@@ -18,6 +18,7 @@
         padding: 5px;
         word-wrap: break-word;
         word-break: break-all;
+        table-layout: fixed;
     }
     td, th {
         padding: 5px;
@@ -109,7 +110,8 @@
       <tr>
         <td class="keterangan">Nomor ST</td>
         <td class="titik">:</td>
-        <td class="isi">{!! nl2br(chunk_split($report->no_st, 50, "\n")) !!}</td>
+        {{-- <td class="isi">{!! nl2br(chunk_split($report->no_st, 50, "\n")) !!}</td> --}}
+        <td class="isi">{{$report->no_st}}</td>
       </tr>
 
       <!-- Judul Kegiatan -->
@@ -151,7 +153,8 @@
       <tr>
         <td>Tempat</td>
         <td>:</td>
-        <td>{!! nl2br(chunk_split($report->where, 66, "\n")) !!}</td>
+        {{-- <td>{!! nl2br(chunk_split($report->where, 66, "\n")) !!}</td> --}}
+        <td>{{$report->where}}</td>
       </tr>
       <!-- IKU -->
       <tr>
