@@ -11,28 +11,30 @@
     }
     body {
         font-family: Arial;
-      }
-      .tabledata {
+    }
+    .tabledata {
         border-collapse: collapse;
-        border: none;
         width: 100%;
         padding: 5px;
-      }
-      td, th {
-        padding: 8px;
-        /* width: 50%; */
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+    td, th {
+        padding: 5px;
         vertical-align: top;
         text-align: justify;
-      }
-      .keterangan{
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+    .keterangan {
         width: 25%;
-      }
-      .titik{
+    }
+    .titik {
         width: 5%;
-      }
-      .isi{
+    }
+    .isi {
         width: 70%;
-      }
+    }
       .header {
         text-align: center;
         font-weight: bold;
