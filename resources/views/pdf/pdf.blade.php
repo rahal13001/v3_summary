@@ -25,9 +25,11 @@
         text-align: justify;
         word-wrap: break-word;
         word-break: break-all;
+        hyphens: auto;
     }
     .keterangan {
         width: 25%;
+        
     }
     .titik {
         width: 5%;
@@ -107,7 +109,7 @@
       <tr>
         <td class="keterangan">Nomor ST</td>
         <td class="titik">:</td>
-        <td class="isi">{{ $report->no_st }}</td>
+        <td class="isi">{{ wordwrap($report->no_st, 20, '&shy;', true) }}</td>
       </tr>
 
       <!-- Judul Kegiatan -->
