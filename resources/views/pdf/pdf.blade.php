@@ -109,7 +109,7 @@
       <tr>
         <td class="keterangan">Nomor ST</td>
         <td class="titik">:</td>
-        <td class="isi">{{ wordwrap($report->no_st, 20, '&shy;', true) }}</td>
+        <td class="isi">{{ wordwrap($report->no_st, 35, '<br>', true) }}</td>
       </tr>
 
       <!-- Judul Kegiatan -->
