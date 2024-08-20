@@ -109,7 +109,7 @@
       <tr>
         <td class="keterangan">Nomor ST</td>
         <td class="titik">:</td>
-        <td class="isi">{!! nl2br(chunk_split($report->no_st, 45, "\n")) !!}</td>
+        <td class="isi">{!! nl2br(chunk_split($report->no_st, 60, "\n")) !!}</td>
       </tr>
 
       <!-- Judul Kegiatan -->
@@ -151,7 +151,7 @@
       <tr>
         <td>Tempat</td>
         <td>:</td>
-        <td>{{ $report->where }}</td>
+        <td>{!! nl2br(chunk_split($report->where, 66, "\n")) !!}</td>
       </tr>
       <!-- IKU -->
       <tr>
