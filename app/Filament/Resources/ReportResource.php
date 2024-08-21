@@ -295,20 +295,20 @@ class ReportResource extends Resource
                         );
                 })->indicator('when'),
                 
-                SelectFilter::make('report.indicators')
-                        ->label('IKU')
-                        ->options(
-                            Indicator::where('status_iku', 'aktif')
-                                ->get()
-                                ->mapWithKeys(function ($indicator) {
-                                    return [$indicator->id => "{$indicator->nama_iku} ({$indicator->tahun_iku})"];
-                                })
-                        )
-
-                        ->preload()
-                        ->multiple()
-                        ->searchable()
-                        ->indicator('IKU'),
+                SelectFilter::make('indicators')
+                    ->relationship('indicators', 'nama_iku'
+                    
+                    // , function (Builder $query) {
+                    //     return $query->where('status_iku', 'aktif')
+                    //                 ->select(['indicators.id', 'indicators.nama_iku', 'indicators.tahun_iku', \DB::raw('CONCAT(nama_iku, " (", tahun_iku, ")") as formatted_name')])
+                    //                 ->orderBy('indicators.nama_iku');
+                    // }
+                    )
+                    ->label('IKU')
+                    ->preload()
+                    ->multiple()
+                    ->searchable()
+                    ->indicator('IKU'),
 
                 SelectFilter::make('teams')
                     ->relationship('teams', 'nama_tim')
