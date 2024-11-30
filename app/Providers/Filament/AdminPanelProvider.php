@@ -68,7 +68,8 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
 
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                \DiscoveryDesign\FilamentGaze\FilamentGazePlugin::make()
                 
             ])
             ->userMenuItems([

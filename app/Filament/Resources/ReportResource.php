@@ -13,7 +13,9 @@ use Filament\Tables\Table;
 use App\Models\Documentation;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use App\Infolists\Components\How;
 use Filament\Tables\Filters\Filter;
+use Illuminate\Contracts\View\View;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\ActionSize;
@@ -37,12 +39,11 @@ use Filament\Infolists\Components\ImageEntry;
 use Filament\Tables\Actions\ExportBulkAction;
 use App\Filament\Resources\ReportResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Infolists\Components\Group as ListGroup;
 use Saade\FilamentAutograph\Forms\Components\SignaturePad;
 use App\Filament\Resources\ReportResource\RelationManagers;
+use DiscoveryDesign\FilamentGaze\Forms\Components\GazeBanner;
 use Mohamedsabil83\FilamentFormsTinyeditor\Components\TinyEditor;
-use Filament\Infolists\Components\Group as ListGroup;
-use Illuminate\Contracts\View\View;
-use App\Infolists\Components\How;
 
 class ReportResource extends Resource
 {
@@ -59,6 +60,11 @@ class ReportResource extends Resource
     {
         return $form
             ->schema([
+                GazeBanner::make()
+                    ->pollTimer(10)
+                    ->lock()
+                    ->hideOnCreate()
+                    ->canTakeControl(),
                 Forms\Components\Select::make('user_id')
                     ->required()
                     ->relationship('user', 'name')
