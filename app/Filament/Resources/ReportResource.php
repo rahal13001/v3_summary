@@ -302,18 +302,25 @@ class ReportResource extends Resource
                 })->indicator('when'),
                 
                 SelectFilter::make('indicators')
-                    ->relationship('indicators', 'nama_iku'
-                    
-                    // , function (Builder $query) {
-                    //     return $query->where('status_iku', 'aktif')
-                    //                 ->select(['indicators.id', 'indicators.nama_iku', 'indicators.tahun_iku', \DB::raw('CONCAT(nama_iku, " (", tahun_iku, ")") as formatted_name')])
-                    //                 ->orderBy('indicators.nama_iku');
-                    // }
-                    )
                     ->label('IKU')
-                    ->preload()
                     ->multiple()
                     ->searchable()
+                    ->options(function () {
+                        return \App\Models\Indicator::select('id', 'nama_iku', 'tahun_iku')
+                            ->orderByDesc('tahun_iku')    
+                            ->get()
+                            ->mapWithKeys(function ($item) {
+                                return [$item->id => "{$item->nama_iku} ({$item->tahun_iku})"];
+                            })
+                            ->toArray();
+                    })
+                    ->query(function ($query, array $data) {
+                        if (empty($data['value'])) return;
+                    
+                        $query->whereHas('indicators', function ($q) use ($data) {
+                            $q->whereIn('indicators.id', (array) $data['value']);
+                        });
+                    })
                     ->indicator('IKU'),
 
                 SelectFilter::make('teams')
