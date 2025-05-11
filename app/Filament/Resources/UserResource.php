@@ -9,6 +9,8 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\UserResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -80,6 +82,58 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('test_fcm')
+                    ->label('Test FCM')
+                    ->icon('heroicon-o-bell')
+                    ->color('warning')
+                    ->visible(fn (Model $record): bool => !empty($record->fcm_token))
+                    ->form([
+                        Forms\Components\TextInput::make('title')
+                            ->required()
+                            ->placeholder('Notification Title')
+                            ->default('Test Notification'),
+                        Forms\Components\Textarea::make('body')
+                            ->required()
+                            ->placeholder('Notification Body')
+                            ->default('This is a test notification from the admin panel'),
+                    ])
+                    ->action(function (Model $record, array $data): void {
+                        try {
+                            $fcmService = app()->make(\App\Services\FCMService::class);
+                            $result = $fcmService->sendNotification(
+                                $record->fcm_token,
+                                $data['title'],
+                                $data['body'],
+                                [
+                                    'test_key' => 'test_value',
+                                    'timestamp' => now()->timestamp,
+                                ]
+                            );
+
+                            if ($result['success']) {
+                                // Handle success
+                                Notification::make()
+                                    ->title('Notification sent successfully')
+                                    ->body($result['message'] ?? 'Notification sent successfully')
+                                    ->success()
+                                    ->send();
+                            } else {
+                                // Handle failure
+                                Notification::make()
+                                    ->title('Notification failed')
+                                    ->body($result['message'] ?? 'Failed to send notification')
+                                    ->danger()
+                                    ->send();
+                            }
+                        } catch (\Exception $e) {
+                            // Handle the exception
+                            Notification::make()
+                                ->title('Error')
+                                ->body('An error occurred: ' . $e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

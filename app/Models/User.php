@@ -34,6 +34,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'avatar_url',
         'nip',
         'jabatan',
+        'fcm_token',
     ];
 
     public function canAccessPanel(Panel $panel): bool

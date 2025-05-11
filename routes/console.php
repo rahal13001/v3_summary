@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('app:delete-unused-files')->dailyAt('02:00');
+Schedule::command('app:send-order-notifications')->everyMinute();

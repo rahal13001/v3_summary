@@ -8,6 +8,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Components\Tab;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class ListReports extends ListRecords
 {
@@ -26,11 +27,11 @@ class ListReports extends ListRecords
         return [
             '5W1H Sebagai Penulis' => Tab::make()
                 ->modifyQueryUsing(fn (Builder $query)
-                    => $query->where('user_id', auth()->id())
+                    => $query->where('user_id', Auth::user()->id)
                     ),
             '5W1H Sebagai Pengikut' => Tab::make()
                 ->modifyQueryUsing(fn (Builder $query)
-                    => $query->whereHas('followers', fn (Builder $query) => $query->where('id', auth()->id()))
+                    => $query->whereHas('followers', fn (Builder $query) => $query->where('id', Auth::user()->id))
                     ),
             'Semua 5W1H' => Tab::make('Semua 5W1H'),
         ];
