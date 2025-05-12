@@ -17,7 +17,12 @@ class FCMservice {
             if (!empty($data)) {
                 $message->withData($data);
             }
-           $response = $messaging->send($message);
+            
+            // Log the data payload for verification
+            // Log::info('FCM Data Payload: ', ['data' => $data]);
+
+            $response = $messaging->send($message);
+            // Log::info('FCM Response: ', ['response' => $response]);
 
             return [
                 'success' => true,
@@ -26,6 +31,8 @@ class FCMservice {
             ];
                
         } catch (\Exception $e) {
+            Log::error('FCM Error: ', ['error' => $e->getMessage()]);
+
             return [
                 'success' => false,
                 'message' => 'Failed To Set Notification'.$e->getMessage()

@@ -2,8 +2,8 @@
  // Give the service worker access to Firebase Messaging.
  // Note that you can only use Firebase Messaging here. Other Firebase libraries
  // are not available in the service worker.
- importScripts('https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js');
- importScripts('https://www.gstatic.com/firebasejs/9.2.0/firebase-messaging-compat.js');
+ importScripts('https://www.gstatic.com/firebasejs/11.7.1/firebase-app-compat.js');
+ importScripts('https://www.gstatic.com/firebasejs/11.7.1/firebase-messaging-compat.js');
 
  // Initialize the Firebase app in the service worker by passing in
  // your app's Firebase config object.
@@ -33,11 +33,14 @@
 // https://firebase.google.com/docs/cloud-messaging/concept-options
 messaging.onBackgroundMessage(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  // Customize notification here
-  const notificationTitle = 'Background Message Title';
+
+  // Extract data from the payload
+  const notificationTitle = payload.data.title || 'Ada Disposisi Yang Harus Segera Dikerjakan';
+  const notificationBody = payload.data.body || 'Segera Lihat Disposisi.';
+  
   const notificationOptions = {
-    body: 'Background Message body.',
-    icon: '/firebase-logo.png'
+    body: notificationBody,
+    icon: '/img/logoweb.png',
   };
 
   self.registration.showNotification(notificationTitle,
