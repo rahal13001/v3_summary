@@ -267,7 +267,7 @@ class OrderResource extends Resource
                 ->action(function (Model $record, array $data): void {
                     try {
                         $executors = Executor::where('order_id', $record->id)->get();
-                        $fcmService = app()->make(\App\Services\FCMService::class);
+                        $fcmService = app()->make(\App\Services\FCMservice::class);
 
                         foreach ($executors as $executor) {
                             $user = $executor->user;
@@ -318,7 +318,7 @@ class OrderResource extends Resource
                     ->color('warning')
                     ->action(function (Collection $records): void {
                         try {
-                            $fcmService = app()->make(\App\Services\FCMService::class);
+                            $fcmService = app()->make(\App\Services\FCMservice::class);
 
                             foreach ($records as $record) {
                                 $executors = Executor::where('order_id', $record->id)->get();
