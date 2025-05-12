@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 
 use Carbon\Carbon;
 use App\Models\Order;
-use App\Services\FCMService;
+use App\Services\FCMservice;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -42,7 +42,7 @@ class SendOrderNotifications extends Command
         ->get();
         
 
-        $fcmService = app()->make(FCMService::class);
+        $fcmService = app()->make(FCMservice::class);
 
         foreach ($orders as $order) {
             $executors = $order->executor;
