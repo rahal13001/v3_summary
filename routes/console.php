@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('app:delete-unused-files')->dailyAt('02:00');
 Schedule::command('app:send-order-notifications')->everyMinute();
+Schedule::command('app:send-email-reminder')->dailyAt('08:00');
