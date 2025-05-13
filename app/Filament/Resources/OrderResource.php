@@ -270,6 +270,18 @@ class OrderResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('test_fcm')
                 ->label('Infokan')
+                ->visible(function ($record) {
+                    // Get the authenticated user
+                    $user = Auth::user();
+                    
+                    // If user has role 'writer', only allow editing their own records
+                    if ($user->can('create', Order::class)) {
+                        return true;
+
+                    }
+                    return $record->user_id === $user->id;
+                    // For other roles (like admin), always show edit button
+                })
                 ->icon('heroicon-o-bell')
                 ->color('warning')
                 ->action(function (Model $record, array $data): void {

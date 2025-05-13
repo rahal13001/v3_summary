@@ -115,7 +115,7 @@ class ExecutorRelationManager extends RelationManager
                         $user = Auth::user();
                         
                         // If user has role 'writer', only allow editing their own records
-                        if ($user->can('create', Order::class)) {
+                        if ($user->can('viewAny', Order::class)) {
                             return true;
 
                         }
