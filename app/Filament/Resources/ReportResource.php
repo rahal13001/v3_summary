@@ -17,6 +17,7 @@ use App\Infolists\Components\How;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Contracts\View\View;
 use Filament\Forms\Components\Radio;
+use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Select;
 use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\FontWeight;
@@ -67,9 +68,14 @@ class ReportResource extends Resource
                     ->canTakeControl(),
                 Forms\Components\Select::make('user_id')
                     ->required()
-                    ->relationship('user', 'name')
-                    ->options(User::all()->pluck('name', 'id'))
+                    ->relationship(
+                        name : 'user',
+                        titleAttribute:'name',
+                        modifyQueryUsing: fn ($query) => $query->where('status', 1)
+                    )
+                    // ->options(User::all()->where('status', 1)->pluck('name', 'id'))
                     ->preload()
+                    ->default(Auth::user()->id)
                     ->label('Penyusun')
                     ->searchable()
                     ->searchPrompt('Cari nama pegawai LPSPL Sorong')
@@ -77,8 +83,12 @@ class ReportResource extends Resource
                 
                 Forms\Components\Select::make('followers.name')
                     ->nullable()
-                    ->relationship('followers', 'name')
-                    ->options(User::all()->pluck('name', 'id'))
+                    ->relationship(
+                        name : 'followers',
+                        titleAttribute:'name',
+                        modifyQueryUsing: fn ($query) => $query->where('status', 1)
+                    )
+                    // ->options(User::all()->where('status', 1)->pluck('name', 'id'))
                     ->preload()
                     ->label('Pengikut')
                     ->searchable()
@@ -98,9 +108,13 @@ class ReportResource extends Resource
                     ->columnSpanFull(),
                 
                 Forms\Components\Select::make('indicator_id')
-                    ->relationship('indicators', 'indicator_id')
+                    ->relationship(
+                        name: 'indicators',
+                        titleAttribute: 'nama_iku',
+                        modifyQueryUsing: fn ($query) => $query->where('status_iku', 'aktif')
+                    )
                     ->label('IKU')
-                    ->options(Indicator::where('status_iku', 'aktif')->pluck('nama_iku', 'id'))
+                    // ->options(Indicator::where('status_iku', 'aktif')->pluck('nama_iku', 'id'))
                     ->preload()
                     ->multiple()
                     ->searchable()

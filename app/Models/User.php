@@ -4,21 +4,22 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Panel;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Notifications\Notifiable;
+use Filament\Models\Contracts\FilamentUser;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Spatie\Permission\Traits\HasRoles;
-use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
-use Filament\Models\Contracts\FilamentUser;
 
 class User extends Authenticatable implements HasAvatar, FilamentUser
 {
     use HasFactory, Notifiable;
     use HasPanelShield;
     use HasRoles;
-
+    use SoftDeletes;
 
 
 
@@ -35,6 +36,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'nip',
         'jabatan',
         'fcm_token',
+        'status',
     ];
 
     public function canAccessPanel(Panel $panel): bool

@@ -74,6 +74,8 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jabatan')
                     ->searchable(),
+                Tables\Columns\ToggleColumn::make('status')
+                    ->label('Status'),
             ])
             ->defaultSort('name')
             ->filters([
@@ -97,43 +99,7 @@ class UserResource extends Resource
                             ->placeholder('Notification Body')
                             ->default('This is a test notification from the admin panel'),
                     ])
-                    ->action(function (Model $record, array $data): void {
-                        try {
-                            $fcmService = app()->make(\App\Services\FCMService::class);
-                            $result = $fcmService->sendNotification(
-                                $record->fcm_token,
-                                $data['title'],
-                                $data['body'],
-                                [
-                                    'test_key' => 'test_value',
-                                    'timestamp' => now()->timestamp,
-                                ]
-                            );
-
-                            if ($result['success']) {
-                                // Handle success
-                                Notification::make()
-                                    ->title('Notification sent successfully')
-                                    ->body($result['message'] ?? 'Notification sent successfully')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                // Handle failure
-                                Notification::make()
-                                    ->title('Notification failed')
-                                    ->body($result['message'] ?? 'Failed to send notification')
-                                    ->danger()
-                                    ->send();
-                            }
-                        } catch (\Exception $e) {
-                            // Handle the exception
-                            Notification::make()
-                                ->title('Error')
-                                ->body('An error occurred: ' . $e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    })
+                    
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

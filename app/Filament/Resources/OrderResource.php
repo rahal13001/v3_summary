@@ -53,7 +53,11 @@ class OrderResource extends Resource
                                     ->default(Auth::user()->id)
                                     ->searchable()
                                     ->preload()
-                                    ->relationship('user', 'name')
+                                    ->relationship(
+                                        name : 'user',
+                                        titleAttribute: 'name',
+                                        modifyQueryUsing: fn ($query) => $query->where('status', 1),
+                                    )
                                     ->required()
                                     ->columns(2),
 
@@ -67,7 +71,11 @@ class OrderResource extends Resource
 
                                 Forms\Components\Select::make('users')
                                     ->label('Pelaksana Tugas')
-                                    ->relationship('users', 'name')
+                                    ->relationship(
+                                        name : 'users',
+                                        titleAttribute: 'name',
+                                        modifyQueryUsing: fn ($query) => $query->where('users.status', 1),
+                                    )
                                     ->preload()
                                     ->searchable()
                                     ->required()
@@ -75,8 +83,8 @@ class OrderResource extends Resource
                                     ->columnSpanFull(),
 
 
-                                Forms\Components\Textarea::make('instruction')
-                                    ->label('Instruksi')
+                                Forms\Components\TextInput::make('instruction')
+                                    ->label('Perintah Tugas')
                                     ->columnSpanFull(),
                             ]),
                     ]),
