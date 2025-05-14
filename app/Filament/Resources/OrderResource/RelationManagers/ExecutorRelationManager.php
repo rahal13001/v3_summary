@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
+use App\Models\Executor;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
@@ -107,6 +108,30 @@ class ExecutorRelationManager extends RelationManager
                 //     }),
             ])
             ->actions([
+                Tables\Actions\Action::make('summary')
+                    ->label('5W1H')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->visible(function ($record) {
+                        if ($record->report_id) {
+                            return true;
+                        }
+                    })
+                    ->url(fn (Executor $record): string => url('/laporan-5w1h/' . $record->report->slug))
+                    ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('proof')
+                    ->label('Dokumetasi')
+                    ->icon('heroicon-o-photo')
+                    ->color('blue')
+                    ->visible(function ($record) {
+                        if ($record->proof) {
+                            return true;
+                        }
+                    })
+                    ->url(fn (Executor $record): string => url('https://summary.timurbersinar.com/' . $record->proof))
+                    ->openUrlInNewTab(),
+
                 Tables\Actions\EditAction::make()
                     ->modalHeading('Sesuaikan Data')
                     ->modalWidth('5x1')
@@ -123,19 +148,21 @@ class ExecutorRelationManager extends RelationManager
                         return $record->user_id === $user->id;
                         // For other roles (like admin), always show edit button
                     }),
+               
                 Tables\Actions\DeleteAction::make()
-                ->visible(function ($record) {
-                    // Get the authenticated user
-                    $user = Auth::user();
-                    
-                    // If user has role 'writer', only allow editing their own records
-                    if ($user->can('create', Order::class)) {
-                        return true;
-                    }
-                    
-                    // For other roles (like admin), always show edit button
-                    return false;
-                }),
+                    ->visible(function ($record) {
+                        // Get the authenticated user
+                        $user = Auth::user();
+                        
+                        // If user has role 'writer', only allow editing their own records
+                        if ($user->can('create', Order::class)) {
+                            return true;
+                        }
+                        
+                        // For other roles (like admin), always show edit button
+                        return false;
+                    }),
+                
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
