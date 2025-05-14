@@ -36,11 +36,11 @@ getToken(messaging, { vapidKey: 'BJJZKhEaHj6Bw2ehmnrC2GKzrStyReRd5AeAwF05uUTVbtJ
       // Send the token to your server and update the UI if necessary
       sendTokenToServer(currentToken);
       // ...
-      console.log(currentToken);
+      // console.log(currentToken);
     } else {
       // Show permission request UI
       requestPermission();
-      console.log('No registration token available. Request permission to generate one.');
+      // console.log('No registration token available. Request permission to generate one.');
       // ...
     }
   }).catch((err) => {
