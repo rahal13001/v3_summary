@@ -89,23 +89,7 @@ class ExecutorRelationManager extends RelationManager
                 Tables\Actions\Action::make('refresh') 
                     ->outlined()
                     ->dispatchSelf('refreshComments'),
-                // Tables\Actions\CreateAction::make()
-                //     ->modalHeading('Tambah Data')
-                //     ->label('Tambah Data')
-                //     ->modalWidth('5x1')
-                //     ->closeModalByClickingAway(false)
-                //     ->visible(function () {
-                //         // Get the authenticated user
-                //         $user = auth()->user();
-                        
-                //         // If user has role 'writer', hide create button
-                //         if ($user->hasRole('writer')) {
-                //             return false;
-                //         }
-                        
-                //         // For other roles (like admin), show create button
-                //         return true;
-                //     }),
+               
             ])
             ->actions([
                 Tables\Actions\Action::make('summary')
@@ -141,11 +125,13 @@ class ExecutorRelationManager extends RelationManager
                         $user = Auth::user();
                         
                         // If user has role 'writer', only allow editing their own records
-                        if ($user->can('viewAny', Order::class)) {
+                        if ($user->can('create', Order::class)) {
                             return true;
 
+                        } elseif ($record->user_id === $user->id) {
+                            return true;   
                         }
-                        return $record->user_id === $user->id;
+                        // return $record->user_id === $user->id;
                         // For other roles (like admin), always show edit button
                     }),
                
