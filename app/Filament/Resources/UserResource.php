@@ -8,6 +8,7 @@ use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
@@ -75,6 +76,16 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('jabatan')
                     ->searchable(),
                 Tables\Columns\ToggleColumn::make('status')
+                    ->visible(function ($record) {
+                        // Get the authenticated user
+                        $user = Auth::user();
+                        
+                        // If user has role 'writer', only allow editing their own records
+                        if ($user->can('create', User::class)) {
+                            return true;
+
+                        } 
+                    })
                     ->label('Status'),
             ])
             ->defaultSort('name')
