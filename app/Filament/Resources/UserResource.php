@@ -92,12 +92,11 @@ class UserResource extends Resource
                     ->form([
                         Forms\Components\TextInput::make('title')
                             ->required()
-                            ->placeholder('Notification Title')
-                            ->default('Test Notification'),
+                            ->placeholder('Notification Title'),
+                            
                         Forms\Components\Textarea::make('body')
                             ->required()
-                            ->placeholder('Notification Body')
-                            ->default('This is a test notification from the admin panel'),
+                            ->placeholder('Notification Body'),
                     ])
                     ->action(function (Model $record, array $data): void {
                         try {
