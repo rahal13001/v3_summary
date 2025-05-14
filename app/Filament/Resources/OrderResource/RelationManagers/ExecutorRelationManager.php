@@ -71,7 +71,8 @@ class ExecutorRelationManager extends RelationManager
                 TextColumn::make('No')
                     ->rowIndex(),
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Nama'),
+                    ->label('Nama')
+                    ->searchable(),
                 Tables\Columns\BooleanColumn::make('status')
                     ->label('Status')
                     ->trueIcon('heroicon-o-check-circle')   // Green check icon for true
