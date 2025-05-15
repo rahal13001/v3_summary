@@ -69,18 +69,20 @@ class OrderResource extends Resource
                                 ])
                                 ->required(),
 
-                                Forms\Components\Select::make('users')
-                                    ->label('Pelaksana Tugas')
-                                    ->relationship(
-                                        name : 'users',
-                                        titleAttribute: 'name',
-                                        modifyQueryUsing: fn ($query) => $query->where('users.status', 1),
-                                    )
-                                    ->preload()
-                                    ->searchable()
-                                    ->required()
-                                    ->multiple()
-                                    ->columnSpanFull(),
+                                // Forms\Components\Select::make('users')
+                                //     ->label('Pelaksana Tugas')
+                                //     ->relationship(
+                                //         name : 'users',
+                                //         titleAttribute: 'name',
+                                //         modifyQueryUsing: fn ($query) => $query->where('users.status', 1),
+                                //     )
+                                //     ->preload()
+                                //     ->searchable()
+                                //     ->required()
+                                //     ->multiple()
+                                //     ->columnSpanFull(),
+
+                                
 
 
                                 Forms\Components\TextInput::make('instruction')
@@ -88,13 +90,43 @@ class OrderResource extends Resource
                                     ->columnSpanFull(),
                             ]),
                     ]),
+
+                    Forms\Components\Section::make()
+                    ->schema([
+                        Forms\Components\Fieldset::make()
+                            ->schema([
+                                Forms\Components\Repeater::make('executor')
+                                    ->label('Pelaksana Tugas')
+                                    ->columnSpanFull()
+                                    ->relationship('executor') // ✅ Use the relationship correctly
+                                    ->schema([
+                                        Forms\Components\Select::make('user_id')
+                                            ->label('Pegawai')
+                                            ->searchable()
+                                            ->preload()
+                                            ->relationship(
+                                                name : 'user',
+                                                titleAttribute: 'name',
+                                                modifyQueryUsing: fn ($query) => $query->where('users.status', 1),
+                                            )
+                                            ->required(),
+                                        Forms\Components\TextInput::make('task')
+                                            ->label('Tugas Individu')
+                                            ->required(),
+                                ]),
+                            ]),
+                    ]),
+
                 
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\Fieldset::make()
                             ->schema([
                                 Forms\Components\DatePicker::make('order_date')
-                                     ->label('Tanggal Tugas'),
+                                     ->label('Tanggal Mulai Tugas'),
+
+                                Forms\Components\DatePicker::make('order_finishdate')
+                                     ->label('Tanggal Selesai Tugas'),
             
                                 Forms\Components\TimePicker::make('order_time')
                                      ->label('Waktu Tugas'),
@@ -102,7 +134,7 @@ class OrderResource extends Resource
                                 Forms\Components\Textarea::make('note')
                                      ->label('Catatan')
                                      ->columnSpanFull(),
-                            ]),
+                            ])->columns(3),
                     ]),
              
                 Forms\Components\Section::make()

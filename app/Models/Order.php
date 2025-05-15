@@ -13,12 +13,14 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'order_date',
+        'order_slug',
         'order_time',
         'order_status',
         'instruction',
         'note',
         'letter',
         'fcm_token',
+        'order_finishdate'
     ];
 
     public function getSlugOptions() : SlugOptions

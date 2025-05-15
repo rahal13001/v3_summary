@@ -128,11 +128,10 @@ class ExecutorRelationManager extends RelationManager
                         if ($user->can('create', Order::class)) {
                             return true;
 
-                        } elseif ($record->user_id === $user->id) {
+                        } elseif ($record->user && $record->user->id === $user->id) {
                             return true;   
                         }
-                        // return $record->user_id === $user->id;
-                        // For other roles (like admin), always show edit button
+                        
                     }),
                
                 Tables\Actions\DeleteAction::make()

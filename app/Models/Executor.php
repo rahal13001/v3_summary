@@ -13,6 +13,8 @@ class Executor extends Model
         'status',
         'proof',
         'description',
+        'order_finishdate',
+        'task'
     ];
 
     public function order()
