@@ -23,7 +23,7 @@ class PdfController extends Controller
         $qr_report = Builder::create()
             ->writer(new PngWriter())
             ->writerOptions([])
-            ->data('http://summary.timurbersinar.com/pdf/'.$report->slug)
+            ->data('https://summary.timurbersinar.com/pdf/'.$report->slug)
             ->encoding(new Encoding('UTF-8'))
             ->size(150)
             ->margin(10)
@@ -36,7 +36,7 @@ class PdfController extends Controller
                 ->writer(new PngWriter())
                 ->writerOptions([])
            
-                ->data('http://summary.timurbersinar.com/pdf/dokumentasi_lainnya/'.$report->documentation->lainnya)
+                ->data('https://summary.timurbersinar.com/'.$report->documentation->lainnya)
                 ->encoding(new Encoding('UTF-8'))
                 ->size(150)
                 ->margin(10)
@@ -48,7 +48,7 @@ class PdfController extends Controller
             $qr_st = Builder::create()
                 ->writer(new PngWriter())
                 ->writerOptions([])
-                ->data('http://summary.timurbersinar.com/pdf/dokumentasi_lainnya/'.$report->documentation->st)
+                ->data('https://summary.timurbersinar.com/'.$report->documentation->st)
                 ->encoding(new Encoding('UTF-8'))
                 ->size(150)
                 ->margin(10)
@@ -104,7 +104,7 @@ class PdfController extends Controller
         $q_lainnya = $qr_lainnya->getDataUri();
         $q_st = $qr_st->getDataUri();
         // $q_ttd = $qr_ttd->getDataUri();
-
+        // return view('pdf.pdf', compact('report', 'q_report', 'q_lainnya', 'q_st'));
         return Pdf::loadView('pdf.pdf', compact('report', 'q_report', 'q_lainnya', 'q_st'))
             ->stream($report->what. '.pdf');
     }
