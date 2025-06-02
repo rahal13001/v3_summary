@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Support\Arr;
 use App\Models\Documentation;
 use Illuminate\Console\Command;
@@ -32,11 +33,13 @@ class DeleteUnusedFiles extends Command
         $documentations = Documentation::select(['dokumentasi1', 'dokumentasi2', 'dokumentasi3', 'st', 'lainnya'])->get()->toArray();
         $documentations = Arr::flatten($documentations);
         $avatar = User::pluck('avatar_url')->toArray();
+        $pwa = Setting::pluck('pwa')->toArray();
 
         collect(Storage::disk('public')->allFiles())
             ->reject(fn (string $file) => $file === '.gitignore')
             ->reject(fn (string $file) => in_array($file, $documentations))
             ->reject(fn (string $file) => in_array($file, $avatar))
+            ->reject(fn (string $file) => in_array($file, $pwa))
             ->each(fn (string $file) => Storage::disk('public')->delete($file));
     }
 }
