@@ -13,6 +13,7 @@
         "filament/filament": "^3.2",
         "kreait/laravel-firebase": "^6.0",
         "laravel/framework": "^12.9",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "mohamedsabil83/filament-forms-tinyeditor": "^2.3",

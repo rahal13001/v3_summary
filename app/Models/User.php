@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Panel;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
 use Filament\Models\Contracts\HasAvatar;
@@ -20,6 +21,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
     use HasPanelShield;
     use HasRoles;
     use SoftDeletes;
+    use HasApiTokens;
 
 
 
@@ -42,7 +44,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         // return str_ends_with($this->email, 'http://summary4.test/');
-        return $this->hasRole(['super_admin', 'admin', 'writer', 'panel_user']);
+        return $this->hasRole(['super_admin', 'admin', 'writer', 'panel_user', 'katimja']);
     }
 
     /**
