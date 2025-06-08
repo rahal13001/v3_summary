@@ -21,10 +21,12 @@ return [
 
     'allowed_origins' => [
         'https://arsip.timurbersinar.com/*',
-        'https://www.arsip.timurbersinar.com'
+        'https://www.arsip.timurbersinar.com',
+        'https://www.timurbersinar.com',
+        'https://timurbersinar.com',
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['~^https:\/\/.+\.timurbersinar\.com$~'],
 
     'allowed_headers' => ['*'],
 
