@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'https://arsip.timurbersinar.com/*',
+        'https://www.arsip.timurbersinar.com'
+    ],
 
     'allowed_origins_patterns' => [],
 
