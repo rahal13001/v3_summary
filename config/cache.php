@@ -17,6 +17,14 @@ return [
 
     'default' => env('CACHE_STORE', 'database'),
 
+    // Gaze stores viewer expiration timestamps as Carbon instances in cache.
+    // Keep cache unserialization restricted, but allow the two Carbon classes
+    // Laravel can use for those timestamps.
+    'serializable_classes' => [
+        \Carbon\Carbon::class,
+        \Illuminate\Support\Carbon::class,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Cache Stores
