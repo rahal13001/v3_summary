@@ -17,7 +17,10 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
-        if (! $user || in_array($user->status, [false, 0, '0'], true) || ! Hash::check($request->password, $user->password)) {
+        if (! $user
+            || $user->trashed()
+            || in_array($user->status, [false, 0, '0', null], true)
+            || ! Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
                 'data' => null,

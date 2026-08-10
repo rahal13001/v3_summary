@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class UserDeletionPolicyTest extends TestCase
 {
-    public function test_user_deletion_lifecycle_is_disabled_until_data_preservation_is_defined(): void
+    public function test_user_deletion_uses_soft_delete_and_permanent_delete_remains_disabled(): void
     {
         $actor = new class extends User
         {
@@ -20,11 +20,11 @@ class UserDeletionPolicyTest extends TestCase
         $target = new User;
         $policy = new UserPolicy;
 
-        $this->assertFalse($policy->delete($actor, $target));
-        $this->assertFalse($policy->deleteAny($actor));
+        $this->assertTrue($policy->delete($actor, $target));
+        $this->assertTrue($policy->deleteAny($actor));
         $this->assertFalse($policy->forceDelete($actor, $target));
         $this->assertFalse($policy->forceDeleteAny($actor));
-        $this->assertFalse($policy->restore($actor, $target));
-        $this->assertFalse($policy->restoreAny($actor));
+        $this->assertTrue($policy->restore($actor, $target));
+        $this->assertTrue($policy->restoreAny($actor));
     }
 }

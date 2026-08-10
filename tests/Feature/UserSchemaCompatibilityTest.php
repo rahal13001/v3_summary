@@ -26,11 +26,14 @@ class UserSchemaCompatibilityTest extends TestCase
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            // Hosting uses a legacy VARCHAR column; SoftDeletes works with
+            // the timestamp string without requiring a production type change.
+            $table->string('deleted_at')->nullable();
             $table->timestamps();
         });
     }
 
-    public function test_user_lookup_matches_the_existing_users_schema_without_deleted_at(): void
+    public function test_user_lookup_uses_the_hosting_soft_delete_column(): void
     {
         User::query()->create([
             'name' => 'Login User',
@@ -42,5 +45,24 @@ class UserSchemaCompatibilityTest extends TestCase
 
         $this->assertNotNull($user);
         $this->assertSame('Login User', $user->name);
+    }
+
+    public function test_soft_deleted_users_are_hidden_and_can_be_restored(): void
+    {
+        $user = User::query()->create([
+            'name' => 'Deleted User',
+            'email' => 'deleted@example.test',
+            'password' => 'hashed-password',
+        ]);
+
+        $user->delete();
+
+        $this->assertNull(User::query()->find($user->id));
+        $this->assertTrue(User::withTrashed()->findOrFail($user->id)->trashed());
+
+        $user->restore();
+
+        $this->assertNotNull(User::query()->find($user->id));
+        $this->assertNull(User::findOrFail($user->id)->deleted_at);
     }
 }

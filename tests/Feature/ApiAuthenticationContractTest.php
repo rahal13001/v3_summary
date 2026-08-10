@@ -140,6 +140,36 @@ class ApiAuthenticationContractTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
+    public function test_a_soft_deleted_user_cannot_log_in_and_no_token_is_created(): void
+    {
+        $user = $this->createUser([
+            'email' => 'deleted@example.test',
+        ]);
+        $user->delete();
+
+        $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'secret-password',
+        ])->assertStatus(422)->assertExactJson([
+            'success' => false,
+            'data' => null,
+            'message' => 'The provided credentials are incorrect.',
+        ]);
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
+    public function test_an_existing_token_is_rejected_after_the_user_is_soft_deleted(): void
+    {
+        $user = $this->createUser(['email' => 'deleted-token@example.test']);
+        $token = $user->createToken('deleted-user-token');
+        $user->delete();
+
+        $this->withToken($token->plainTextToken)
+            ->getJson('/api/user')
+            ->assertUnauthorized();
+    }
+
     public function test_login_is_rate_limited_after_five_attempts_per_email_and_ip(): void
     {
         for ($attempt = 1; $attempt <= 5; $attempt++) {

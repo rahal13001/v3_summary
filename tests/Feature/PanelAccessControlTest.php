@@ -23,6 +23,22 @@ class PanelAccessControlTest extends TestCase
         $this->assertFalse($user->canAccessPanel(Panel::make()));
     }
 
+    public function test_soft_deleted_users_cannot_access_the_filament_panel_even_with_an_allowed_role(): void
+    {
+        $user = new class extends User
+        {
+            public function hasRole($roles, ?string $guard = null): bool
+            {
+                return true;
+            }
+        };
+
+        $user->status = 1;
+        $user->deleted_at = now();
+
+        $this->assertFalse($user->canAccessPanel(Panel::make()));
+    }
+
     public function test_active_users_with_an_allowed_role_can_access_the_filament_panel(): void
     {
         $user = new class extends User

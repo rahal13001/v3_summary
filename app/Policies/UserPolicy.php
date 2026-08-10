@@ -62,7 +62,7 @@ class UserPolicy
      */
     public function delete(User $user, User $target): bool
     {
-        return false;
+        return $user->can('delete_user');
     }
 
     /**
@@ -73,7 +73,7 @@ class UserPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return false;
+        return $user->can('delete_any_user');
     }
 
     /**
@@ -106,7 +106,7 @@ class UserPolicy
      */
     public function restore(User $user, User $target): bool
     {
-        return false;
+        return $user->can('restore_user');
     }
 
     /**
@@ -117,7 +117,7 @@ class UserPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return false;
+        return $user->can('restore_any_user');
     }
 
     /**
