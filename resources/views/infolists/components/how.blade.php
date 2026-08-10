@@ -1,17 +1,33 @@
 <div>
     <style>
-       /* General Styling */
+       /* Report rich text */
        .filament-display-how {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            /* color: #333; */
+            --how-text: #1f2937;
+            --how-muted: #4b5563;
+            font-family: inherit;
+            color: var(--how-text);
+            font-size: 0.95rem;
+            line-height: 1.75;
+            overflow-wrap: anywhere;
+            overflow-x: auto;
+        }
+
+        :root.dark .filament-display-how {
+            --how-text: #f4f4f5;
+            --how-muted: #d4d4d8;
         }
         
         /* Headings */
         .filament-display-how h1, .filament-display-how h2, .filament-display-how h3,
         .filament-display-how h4, .filament-display-how h5, .filament-display-how h6 {
-            margin-top: 1.2em;
+            margin: 1.5em 0 0.55em;
+            color: var(--how-text);
             font-weight: bold;
+        }
+        .filament-display-how h1:first-child, .filament-display-how h2:first-child,
+        .filament-display-how h3:first-child, .filament-display-how h4:first-child,
+        .filament-display-how h5:first-child, .filament-display-how h6:first-child {
+            margin-top: 0;
         }
         .filament-display-how h1 { font-size: 2em; }
         .filament-display-how h2 { font-size: 1.75em; }
@@ -22,16 +38,25 @@
 
         /* Paragraphs */
         .filament-display-how p {
-            margin: 0.8em 0;
+            margin: 0 0 1rem;
         }
 
         /* Links */
         .filament-display-how a {
-            color: #007bff;
-            text-decoration: none;
+            color: #2563eb;
+            text-decoration: underline;
+            text-underline-offset: 0.15em;
         }
         .filament-display-how a:hover {
             text-decoration: underline;
+        }
+        :root.dark .filament-display-how a {
+            color: #60a5fa;
+        }
+        .filament-display-how a:focus-visible {
+            border-radius: 0.125rem;
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
         }
 
         /* Lists */
@@ -52,48 +77,76 @@
         /* Block Quotes */
         .filament-display-how blockquote {
             margin: 1em 0;
-            padding: 0.5em 1em;
-            border-left: 5px solid #ccc;
-            color: #555;
-            background: #f9f9f9;
+            padding: 0.75em 1em;
+            border-left: 4px solid #f59e0b;
+            color: var(--how-muted);
+            background: rgb(245 158 11 / 0.08);
         }
 
         /* Tables */
+        .filament-display-how {
+            --how-table-background: #ffffff;
+            --how-table-header-background: #f5f5f5;
+            --how-table-border: #d1d5db;
+            --how-table-text: #111827;
+        }
+
+        :root.dark .filament-display-how {
+            --how-table-background: transparent;
+            --how-table-header-background: transparent;
+            --how-table-border: rgba(255, 255, 255, 0.65);
+            --how-table-text: #ffffff;
+        }
+
         .filament-display-how table {
             width: 100%;
+            min-width: 36rem;
             border-collapse: collapse;
-            margin: 1em 0;
+            margin: 1.25rem 0;
+            color: var(--how-table-text) !important;
+            background-color: var(--how-table-background) !important;
         }
         .filament-display-how th, .filament-display-how td {
-            border: 1px solid #ddd;
-            padding: 0.5em;
+            border: 1px solid var(--how-table-border) !important;
+            padding: 0.65rem 0.75rem;
+            vertical-align: top;
+            color: var(--how-table-text) !important;
+            background-color: var(--how-table-background) !important;
         }
         .filament-display-how th {
-            background: #f5f5f5;
+            background-color: var(--how-table-header-background) !important;
             font-weight: bold;
-        }
-        .filament-display-how td {
-            background: #fff;
         }
 
         /* Code Samples */
         .filament-display-how pre {
-            background: #f4f4f4;
-            border: 1px solid #ddd;
-            padding: 1em;
+            background: rgb(243 244 246);
+            border: 1px solid rgb(209 213 219);
+            border-radius: 0.5rem;
+            padding: 1rem;
             overflow: auto;
         }
         .filament-display-how code {
-            background: #f4f4f4;
+            background: rgb(243 244 246);
             padding: 0.2em 0.4em;
-            border-radius: 3px;
+            border-radius: 0.25rem;
+        }
+
+        :root.dark .filament-display-how pre,
+        :root.dark .filament-display-how code {
+            background: rgb(39 39 42);
+            border-color: rgb(63 63 70);
         }
 
         /* Horizontal Rule */
         .filament-display-how hr {
             border: none;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid rgb(229 231 235);
             margin: 1.5em 0;
+        }
+
+        :root.dark .filament-display-how hr {
+            border-color: rgb(63 63 70);
         }
 
         /* Inline Formatting */
@@ -136,7 +189,7 @@
     </style>
 
     <div class="filament-display-how">
-        {!! $state !!}
+        {!! str($state)->sanitizeHtml() !!}
     </div>
 
 </div>
