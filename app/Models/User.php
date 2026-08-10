@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Notifications\Notifiable;
 use Filament\Models\Contracts\FilamentUser;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -20,7 +19,6 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
     use HasFactory, Notifiable;
     use HasPanelShield;
     use HasRoles;
-    use SoftDeletes;
     use HasApiTokens;
 
 
@@ -44,7 +42,8 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         // return str_ends_with($this->email, 'http://summary4.test/');
-        return $this->hasRole(['super_admin', 'admin', 'writer', 'panel_user', 'katimja']);
+        return ! in_array($this->status, [false, 0, '0', null], true)
+            && $this->hasRole(['super_admin', 'admin', 'writer', 'panel_user', 'katimja']);
     }
 
     /**

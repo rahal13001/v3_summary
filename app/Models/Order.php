@@ -83,22 +83,29 @@ class Order extends Model
     public function userStatus()
     {
         $person = Auth::user()->id;
-        $taskId = $this->id;
-        $statusData = Executor::where('user_id', $person)->where('order_id', $taskId)->first();
-        return $statusData;       
+
+        if ($this->relationLoaded('executor')) {
+            return $this->executor->firstWhere('user_id', $person);
+        }
+
+        return $this->executor()->where('user_id', $person)->first();
     }
 
     public function pegawaidapatDisposisi()
     {
-        $taskId = $this->id;
-        $data = Executor::where('order_id', $taskId)->count();
-        return $data;
+        if ($this->getAttribute('executors_count') !== null) {
+            return (int) $this->getAttribute('executors_count');
+        }
+
+        return $this->executor()->count();
     }
 
     public function pegawaiSelesai(){
-        $taskId = $this->id;
-        $data = Executor::where('order_id', $taskId)->where('status', 1)->count();
-        return $data;
+        if ($this->getAttribute('completed_executors_count') !== null) {
+            return (int) $this->getAttribute('completed_executors_count');
+        }
+
+        return $this->executor()->where('status', 1)->count();
     }
 
     public function getRouteKeyName()

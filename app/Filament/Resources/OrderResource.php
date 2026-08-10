@@ -2,13 +2,32 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Services\FCMservice;
+use Exception;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\BulkAction;
+use App\Filament\Resources\OrderResource\Pages\ListOrders;
+use App\Filament\Resources\OrderResource\Pages\CreateOrder;
+use App\Filament\Resources\OrderResource\Pages\ViewOrder;
+use App\Filament\Resources\OrderResource\Pages\EditOrder;
 use Carbon\Carbon;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
 use App\Models\Order;
 use App\Models\Executor;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Tables\Filters\Filter;
@@ -35,20 +54,20 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-c-chat-bubble-oval-left-ellipsis';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-c-chat-bubble-oval-left-ellipsis';
     protected static ?string $slug = 'disposisi';
-    protected static ?string $navigationGroup = 'Executive Summary';
+    protected static string | \UnitEnum | null $navigationGroup = 'Executive Summary';
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make()
+        return $schema
+            ->components([
+                Section::make()
                     ->schema([
-                        Forms\Components\Fieldset::make()
+                        Fieldset::make()
                             ->schema([
-                                Forms\Components\Select::make('user_id')
+                                Select::make('user_id')
                                     ->label('Pemberi Perintah')
                                     ->default(Auth::user()->id)
                                     ->searchable()
@@ -61,7 +80,7 @@ class OrderResource extends Resource
                                     ->required()
                                     ->columns(2),
 
-                                Forms\Components\Select::make('order_status')
+                                Select::make('order_status')
                                     ->label('Status Tugas')
                                     ->options([
                                         'penting'=>'Penting',
@@ -85,22 +104,22 @@ class OrderResource extends Resource
                                 
 
 
-                                Forms\Components\TextInput::make('instruction')
+                                TextInput::make('instruction')
                                     ->label('Perintah Tugas')
                                     ->columnSpanFull(),
                             ]),
                     ]),
 
-                    Forms\Components\Section::make()
+                    Section::make()
                     ->schema([
-                        Forms\Components\Fieldset::make()
+                        Fieldset::make()
                             ->schema([
-                                Forms\Components\Repeater::make('executor')
+                                Repeater::make('executor')
                                     ->label('Pelaksana Tugas')
                                     ->columnSpanFull()
                                     ->relationship('executor') // ✅ Use the relationship correctly
                                     ->schema([
-                                        Forms\Components\Select::make('user_id')
+                                        Select::make('user_id')
                                             ->label('Pegawai')
                                             ->searchable()
                                             ->preload()
@@ -110,7 +129,7 @@ class OrderResource extends Resource
                                                 modifyQueryUsing: fn ($query) => $query->where('users.status', 1),
                                             )
                                             ->required(),
-                                        Forms\Components\TextInput::make('task')
+                                        TextInput::make('task')
                                             ->label('Tugas Individu')
                                             ->required(),
                                 ]),
@@ -118,34 +137,34 @@ class OrderResource extends Resource
                     ]),
 
                 
-                Forms\Components\Section::make()
+                Section::make()
                     ->schema([
-                        Forms\Components\Fieldset::make()
+                        Fieldset::make()
                             ->schema([
-                                Forms\Components\DatePicker::make('order_date')
+                                DatePicker::make('order_date')
                                      ->label('Tanggal Mulai Tugas'),
 
-                                Forms\Components\DatePicker::make('order_finishdate')
+                                DatePicker::make('order_finishdate')
                                      ->label('Tanggal Selesai Tugas'),
             
-                                Forms\Components\TimePicker::make('order_time')
+                                TimePicker::make('order_time')
                                      ->label('Waktu Tugas'),
                                 
-                                Forms\Components\Textarea::make('note')
+                                Textarea::make('note')
                                      ->label('Catatan')
                                      ->columnSpanFull(),
                             ])->columns(3),
                     ]),
              
-                Forms\Components\Section::make()
+                Section::make()
                     ->schema([
-                        Forms\Components\FileUpload::make('letter')
+                        FileUpload::make('letter')
                             ->label('Dokumen Lampiran')
                             ->openable()
                             ->directory('perintah_disposisi')
                             ->visibility('public')
                             ->maxSize(10240)
-                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint', 'image/*'])
+                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'image/jpeg', 'image/png', 'image/webp'])
                             ->uploadingMessage('Dokumen sedang diupload')
                             ->columnSpanFull(),
                     ]),
@@ -172,16 +191,16 @@ class OrderResource extends Resource
             ->columns([
                 TextColumn::make('No')
                     ->rowIndex(),
-                Tables\Columns\TextColumn::make('order_date')
+                TextColumn::make('order_date')
                     ->label('Tanggal Tugas')
                     ->date('d M Y')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('Pemberi Perintah')
                     ->searchable()
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('instruction')
+                TextColumn::make('instruction')
                     ->label('Tugas')
                     ->sortable()
                     ->searchable()
@@ -198,7 +217,7 @@ class OrderResource extends Resource
                     })
                     ->wrap()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('order_status')
+                TextColumn::make('order_status')
                     ->label('Status')
                     ->badge()
                     ->searchable()
@@ -210,7 +229,7 @@ class OrderResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('pegawaidapatDisposisi')
+                TextColumn::make('pegawaidapatDisposisi')
                     ->label('Pelaksana')
                     ->alignCenter()
                     ->getStateUsing(fn ($record) => $record->pegawaidapatDisposisi())
@@ -225,7 +244,7 @@ class OrderResource extends Resource
                             )
                     ),
                 
-                Tables\Columns\TextColumn::make('pegawaiSelesai')
+                TextColumn::make('pegawaiSelesai')
                     ->label('Selesai')
                     ->alignCenter()
                     ->badge()
@@ -260,11 +279,11 @@ class OrderResource extends Resource
                            
                     ),
                     
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -278,7 +297,7 @@ class OrderResource extends Resource
                     ->relationship('user', 'name'),
 
                 Filter::make('order_date')
-                    ->form([
+                    ->schema([
                         DatePicker::make('order_from')
                             ->label('Tanggal Mulai'),
                         DatePicker::make('order_untill')
@@ -297,15 +316,15 @@ class OrderResource extends Resource
                     }),
   
             ])
-            ->actions([
+            ->recordActions([
                 // Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('test_fcm')
+                EditAction::make(),
+                Action::make('test_fcm')
                 ->label('Infokan')
                 ->visible(function ($record) {
                     // Get the authenticated user
                     $user = Auth::user();
-                    
+
                     // If user has role 'writer', only allow editing their own records
                     if ($user->can('create', Order::class)) {
                         return true;
@@ -319,7 +338,7 @@ class OrderResource extends Resource
                 ->action(function (Model $record, array $data): void {
                     try {
                         $executors = Executor::where('order_id', $record->id)->get();
-                        $fcmService = app()->make(\App\Services\FCMservice::class);
+                        $fcmService = app()->make(FCMservice::class);
 
                         foreach ($executors as $executor) {
                             $user = $executor->user;
@@ -351,7 +370,7 @@ class OrderResource extends Resource
                                 }
                             }
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         Notification::make()
                             ->title('Error')
                             ->body('An error occurred: ' . $e->getMessage())
@@ -361,16 +380,16 @@ class OrderResource extends Resource
                 }),
             ])
             ->paginated([10, 25, 50, 75])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('bulk_test_fcm')
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    BulkAction::make('bulk_test_fcm')
                     ->label('Infokan')
                     ->icon('heroicon-o-bell')
                     ->color('warning')
                     ->action(function (Collection $records): void {
                         try {
-                            $fcmService = app()->make(\App\Services\FCMservice::class);
+                            $fcmService = app()->make(FCMservice::class);
 
                             foreach ($records as $record) {
                                 $executors = Executor::where('order_id', $record->id)->get();
@@ -406,7 +425,7 @@ class OrderResource extends Resource
                                     }
                                 }
                             }
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             Notification::make()
                                 ->title('Error')
                                 ->body('An error occurred: ' . $e->getMessage())
@@ -426,13 +445,23 @@ class OrderResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with('executor')
+            ->withCount([
+                'executor as executors_count',
+                'executor as completed_executors_count' => fn (Builder $query): Builder => $query->where('status', 1),
+            ]);
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
-            'view' => Pages\ViewOrder::route('/{record}'),
-            'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'index' => ListOrders::route('/'),
+            'create' => CreateOrder::route('/create'),
+            'view' => ViewOrder::route('/{record}'),
+            'edit' => EditOrder::route('/{record}/edit'),
         ];
     }
 

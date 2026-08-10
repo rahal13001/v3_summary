@@ -2,11 +2,20 @@
 
 namespace App\Filament\Resources\OrderResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\BooleanColumn;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use App\Models\Executor;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Order;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
@@ -21,17 +30,17 @@ class ExecutorRelationManager extends RelationManager
     protected static ?string $title = 'Aktivitas Pelaksana Tugas';
 
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('user_id')
+        return $schema
+            ->components([
+                Select::make('user_id')
                     ->label('Pelaksana Tugas')
                     ->relationship('user', 'name')
                     ->required()
                     ->disabled(),
 
-                Forms\Components\Select::make('status')
+                Select::make('status')
                     ->label('Status')
                     ->options([
                         true => 'Selesai',
@@ -39,24 +48,24 @@ class ExecutorRelationManager extends RelationManager
                     ])
                     ->required(),
 
-                Forms\Components\Textarea::make('description')
+                Textarea::make('description')
                     ->label('Deskripsi')
                     ->required()
                     ->columnSpanFull(),
 
-                Forms\Components\Select::make('report_id')
+                Select::make('report_id')
                     ->label('Laporan 5W1H')
                     ->relationship('report', 'what')
                     ->searchable()
                     ->columnSpanFull(),
 
-                Forms\Components\FileUpload::make('proof')
+                FileUpload::make('proof')
                     ->label('Bukti Dukung')
                     ->directory('tindakLanjutDispo')
                     ->visibility('public')
                     ->openable()
                     ->maxSize(3072)
-                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint', 'image/*'])
+                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'image/jpeg', 'image/png', 'image/webp'])
                     ->uploadingMessage('Dokumen sedang diupload')
                     ->columnSpanFull()
                     ->required(),
@@ -71,10 +80,10 @@ class ExecutorRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('No')
                     ->rowIndex(),
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('Nama')
                     ->searchable(),
-                Tables\Columns\BooleanColumn::make('status')
+                BooleanColumn::make('status')
                     ->label('Status')
                     ->trueIcon('heroicon-o-check-circle')   // Green check icon for true
                     ->falseIcon('heroicon-o-x-circle')      // Red cross icon for false
@@ -86,13 +95,13 @@ class ExecutorRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\Action::make('refresh') 
+                Action::make('refresh')
                     ->outlined()
                     ->dispatchSelf('refreshComments'),
                
             ])
-            ->actions([
-                Tables\Actions\Action::make('summary')
+            ->recordActions([
+                Action::make('summary')
                     ->label('5W1H')
                     ->icon('heroicon-o-document-text')
                     ->color('success')
@@ -104,7 +113,7 @@ class ExecutorRelationManager extends RelationManager
                     ->url(fn (Executor $record): string => url('/laporan-5w1h/' . $record->report->slug))
                     ->openUrlInNewTab(),
 
-                Tables\Actions\Action::make('proof')
+                Action::make('proof')
                     ->label('Dokumetasi')
                     ->icon('heroicon-o-photo')
                     ->color('blue')
@@ -116,7 +125,7 @@ class ExecutorRelationManager extends RelationManager
                     ->url(fn (Executor $record): string => url('https://summary.timurbersinar.com/' . $record->proof))
                     ->openUrlInNewTab(),
 
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->modalHeading('Sesuaikan Data')
                     ->modalWidth('5x1')
                     ->closeModalByClickingAway(false)
@@ -134,7 +143,7 @@ class ExecutorRelationManager extends RelationManager
                         
                     }),
                
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->visible(function ($record) {
                         // Get the authenticated user
                         $user = Auth::user();
@@ -149,9 +158,9 @@ class ExecutorRelationManager extends RelationManager
                     }),
                 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                     ->visible(function () {
                         // Get the authenticated user
                         $user = Auth::user();

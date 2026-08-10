@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -17,15 +17,16 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
-        if (!$user || ! Hash::check($request->password, $user->password)) {
+        if (! $user || in_array($user->status, [false, 0, '0'], true) || ! Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
                 'data' => null,
-                'message' => 'The provided credentials are incorrect.'
+                'message' => 'The provided credentials are incorrect.',
             ], 422);
         }
 
         $token = $user->createToken('my-app-token')->plainTextToken;
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -33,9 +34,18 @@ class AuthController extends Controller
                 'token_type' => 'Bearer',
                 'user' => $user,
             ],
-            'message' => 'Login success'
+            'message' => 'Login success',
         ], 200);
     }
 
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()?->delete();
 
+        return response()->json([
+            'success' => true,
+            'data' => null,
+            'message' => 'Logout success',
+        ]);
+    }
 }

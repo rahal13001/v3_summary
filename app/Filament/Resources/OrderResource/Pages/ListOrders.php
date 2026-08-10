@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\OrderResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Schemas\Components\Tabs\Tab;
 use App\Models\Order;
 use Filament\Actions;
 use Illuminate\Support\Facades\Auth;
-use Filament\Resources\Components\Tab;
 use App\Filament\Resources\OrderResource;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +20,7 @@ class ListOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 

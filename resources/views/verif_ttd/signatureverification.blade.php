@@ -18,7 +18,7 @@
             <div class="card-body">
                 <div class="container">
                     <div class="row">
-                        Laporan Ditanda Tangani Oleh : <strong>{{$report->user->name}}</strong>
+                        Laporan Ditanda Tangani Oleh : <strong>{{$report->user?->name ?? 'Tidak diketahui'}}</strong>
                         Judul Laporan : <strong>{{$report->what}}</strong>
                     </div>
                     <div class="row mt-3">

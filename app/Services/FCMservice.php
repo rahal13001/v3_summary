@@ -1,5 +1,6 @@
 <?php
 namespace App\Services;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
@@ -30,7 +31,7 @@ class FCMservice {
                 'response' => $response,
             ];
                
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('FCM Error: ', ['error' => $e->getMessage()]);
 
             return [

@@ -2,10 +2,29 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
+use App\Services\FCMservice;
+use Exception;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\ViewUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Auth;
@@ -21,38 +40,38 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user';
     protected static ?string $slug = 'pengguna';
     protected static ?int $navigationSort = 4;
-    protected static ?string $navigationGroup = 'Admin Area';
+    protected static string | \UnitEnum | null $navigationGroup = 'Admin Area';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->required()
                     ->label('Nama')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('nip')
+                TextInput::make('nip')
                     ->label('NIP / ID')
                     ->maxLength(18),
-                Forms\Components\TextInput::make('jabatan')
+                TextInput::make('jabatan')
                     ->label('Jabatan')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('email')
+                TextInput::make('email')
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                Forms\Components\Select::make('roles')
+                DateTimePicker::make('email_verified_at'),
+                Select::make('roles')
                     ->relationship('roles', 'name', fn ($query) => 
                         $query->when(!Auth::user()->hasRole('super_admin'), fn ($q) => $q->where('name', '!=', 'super_admin'))
                     )
                     ->multiple()
                     ->preload()
                     ->searchable(),
-                Forms\Components\TextInput::make('password')
+                TextInput::make('password')
                     ->password()
                     ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
                     ->dehydrated(fn (?string $state): bool => filled($state))
@@ -65,19 +84,19 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('nip')
+                TextColumn::make('nip')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('jabatan')
+                TextColumn::make('jabatan')
                     ->searchable(),
-                Tables\Columns\ToggleColumn::make('status')
+                ToggleColumn::make('status')
                     ->visible(function ($record) {
                         // Get the authenticated user
                         $user = Auth::user();
@@ -94,26 +113,26 @@ class UserResource extends Resource
             ->filters([
                 // Tables\Filters\TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('test_fcm')
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                Action::make('test_fcm')
                     ->label('Test FCM')
                     ->icon('heroicon-o-bell')
                     ->color('warning')
                     ->visible(fn (Model $record): bool => !empty($record->fcm_token))
-                    ->form([
-                        Forms\Components\TextInput::make('title')
+                    ->schema([
+                        TextInput::make('title')
                             ->required()
                             ->placeholder('Notification Title'),
                             
-                        Forms\Components\Textarea::make('body')
+                        Textarea::make('body')
                             ->required()
                             ->placeholder('Notification Body'),
                     ])
                     ->action(function (Model $record, array $data): void {
                         try {
-                            $fcmService = app()->make(\App\Services\FCMservice::class);
+                            $fcmService = app()->make(FCMservice::class);
                             $result = $fcmService->sendNotification(
                                 $record->fcm_token,
                                 $data['title'],
@@ -139,7 +158,7 @@ class UserResource extends Resource
                                     ->danger()
                                     ->send();
                             }
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             // Handle the exception
                             Notification::make()
                                 ->title('Error')
@@ -150,11 +169,11 @@ class UserResource extends Resource
                     })
                     
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -169,10 +188,10 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'view' => Pages\ViewUser::route('/{record}'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'index' => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'view' => ViewUser::route('/{record}'),
+            'edit' => EditUser::route('/{record}/edit'),
         ];
     }
 

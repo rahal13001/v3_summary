@@ -41,7 +41,6 @@
       .header {
         text-align: center;
         font-weight: bold;
-        network error
         font-size: 20px;
         }
         .header-img {
@@ -61,6 +60,38 @@
       }
       .report-content .isi {
         text-indent: 4em;
+      }
+
+      /* Rich-text tables: keep the grid visible and fit columns to the page. */
+      .report-content table {
+        width: 100%;
+        max-width: 100%;
+        margin: 12px 0;
+        border: 1px solid #444;
+        border-collapse: collapse;
+        border-spacing: 0;
+        table-layout: fixed;
+      }
+
+      .report-content table th,
+      .report-content table td {
+        border: 1px solid #444;
+        padding: 6px 8px;
+        vertical-align: top;
+        text-align: left;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: normal;
+      }
+
+      .report-content table th {
+        font-weight: bold;
+        background-color: #f3f4f6;
+      }
+
+      .report-content table td {
+        background-color: #ffffff;
       }
 
 
@@ -188,7 +219,7 @@
     <div class="report-content">
       <p>Deskripsi Kegiatan</p>
      
-        {!! $report->how !!}
+        {!! str($report->how)->sanitizeHtml() !!}
 
         <div style="margin-top: 30px; margin-left: 55%;text-align:center;">
           <span style="margin-left: 30%">Penyusun</span>
@@ -206,31 +237,33 @@
             <br>
             <br>
             @endif
-          <span style="margin-left: 30%">{{$report->user->name}}</span>
+          <span style="margin-left: 30%">{{$report->user?->name ?? 'Tidak diketahui'}}</span>
       </div>
 
     </div>
 <!-- Dokumentasi Gambar 1 -->
+@if ($documentationFiles['dokumentasi1'] ?? null)
       <div style="margin: 30px 0; text-align: center;">
         <div style="margin-top: 30px; margin-bottom:30px;"><h4>Dokumentasi</h4></div>
        
-       <img src="{{public_path($report->documentation->dokumentasi1) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
+       <img src="{{ $documentationFiles['dokumentasi1'] }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
         {{-- <p style="margin-top: 10px;">Gambar 1: Judul Gambar 1</p> --}}
       </div>
+@endif
 
       <!-- Dokumentasi Gambar 2 -->
-      @if ($report->documentation->dokumentasi2 != null)
+      @if ($documentationFiles['dokumentasi2'] ?? null)
         
       <div style="margin: 30px 0; text-align: center;">
-        <img src="{{ public_path($report->documentation->dokumentasi2) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
+        <img src="{{ $documentationFiles['dokumentasi2'] }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
         {{-- <p style="margin-top: 10px;">Gambar 2: Judul Gambar 2</p> --}}
       </div>
       @endif
 
       <!-- Dokumentasi Gambar 3 -->
-      @if ($report->documentation->dokumentasi3 != null)
+      @if ($documentationFiles['dokumentasi3'] ?? null)
       <div style="margin: 30px 0; text-align: center;">
-        <img src="{{ public_path($report->documentation->dokumentasi3) }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
+        <img src="{{ $documentationFiles['dokumentasi3'] }}" style="width: 50%; height: auto; border: 1px solid #ccc;">
         {{-- <p style="margin-top: 10px;">Gambar 3: Judul Gambar 3</p> --}}
       </div>
       @endif
@@ -241,11 +274,11 @@
       {{-- <div style="margin-top: 30px;"><h4>QR Code</h4></div> --}}
       <table style="width: 100%; margin: 0 auto; margin-top:30px">
         <tr>
-          @if ($report->documentation->st != null)
+          @if ($q_st)
             <td style="text-align:center">ST <br><img style="width: 120px" src="{!! $q_st !!} "></td>
           @endif
 
-          @if ($report->documentation->lainnya != null)
+          @if ($q_lainnya)
             <td style="text-align:center">Lainnya <br> <img style="width: 120px" src="{!! $q_lainnya !!} "></td>
           @endif
 

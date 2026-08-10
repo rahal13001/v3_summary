@@ -9,14 +9,18 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 class ReportsPerTeamChart extends ChartWidget
 {
     use InteractsWithPageFilters;
-    protected static ?string $heading = '5W1H Per Tim Kerja';
+    protected ?string $heading = '5W1H Per Tim Kerja';
+
+    protected ?string $description = 'Distribusi laporan pada tim kerja yang aktif.';
+
+    protected ?string $maxHeight = '290px';
 
     protected static ?int $sort = 4;
 
     protected function getData(): array
     {
-        $startDate = $this->filters['startDate'] ?? null;
-        $endDate = $this->filters['endDate'] ?? null;
+        $startDate = $this->pageFilters['startDate'] ?? null;
+        $endDate = $this->pageFilters['endDate'] ?? null;
 
         $teams = Team::query()->where('status_tim', 'aktif')
         ->withCount([
@@ -86,6 +90,8 @@ class ReportsPerTeamChart extends ChartWidget
                         'rgba(255, 159, 64, 0.6)', // border color
                     ],
                     'borderWidth' => 1,
+                    'borderRadius' => 8,
+                    'borderSkipped' => false,
                 ]
             ]
 
@@ -100,9 +106,24 @@ class ReportsPerTeamChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
+            'responsive' => true,
+            'maintainAspectRatio' => false,
             'plugins' => [
                 'legend' => [
                     'display' => false,
+                ],
+            ],
+            'scales' => [
+                'x' => [
+                    'grid' => [
+                        'display' => false,
+                    ],
+                ],
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => [
+                        'precision' => 0,
+                    ],
                 ],
             ],
         ];

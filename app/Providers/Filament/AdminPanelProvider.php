@@ -2,10 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use DiscoveryDesign\FilamentGaze\FilamentGazePlugin;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use Filament\View\PanelsRenderHook;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
 use App\Filament\Pages\Auth\EditProfile;
@@ -17,7 +20,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 class AdminPanelProvider extends PanelProvider
@@ -30,16 +33,20 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->path('')
             ->login()
-            ->registration()
             ->passwordReset()
             ->emailVerification()
             ->profile(EditProfile::class, isSimple: true)
+            ->brandName('Summary')
             ->brandLogo(asset('img/summarylight.png'))
             ->darkModeBrandLogo(asset('img/summarydark.png'))
             ->brandLogoHeight('4rem')            
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => view('filament.styles.signature-theme'),
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->favicon(asset('img/logoweb.png'))
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -60,7 +67,7 @@ class AdminPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
+                PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
@@ -68,8 +75,8 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web')
 
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-                \DiscoveryDesign\FilamentGaze\FilamentGazePlugin::make()
+                FilamentShieldPlugin::make(),
+                FilamentGazePlugin::make()
                 
             ])
             ->userMenuItems([

@@ -13,14 +13,14 @@ class ReportsOverview extends BaseWidget
 
     use InteractsWithPageFilters;
 
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 1;
     
     protected int | string | array $columnSpan = 'full';
     
     protected function getStats(): array
     {
-        $startDate = $this->filters['startDate'] ?? null;
-        $endDate = $this->filters['endDate'] ?? null;
+        $startDate = $this->pageFilters['startDate'] ?? null;
+        $endDate = $this->pageFilters['endDate'] ?? null;
     
         $baseQuery = fn ($query) => $query->when($startDate, fn (Builder $query) => $query->whereDate('when', '>=', $startDate))
         ->when($endDate, fn (Builder $query) => $query->whereDate('when', '<=', $endDate));
@@ -30,9 +30,18 @@ class ReportsOverview extends BaseWidget
         $totalFollowedReports = Report::query()->whereHas('followers', fn (Builder $query) => $query->where('user_id', auth()->id()))->when($startDate || $endDate, $baseQuery)->count();
     
         return [
-            Stat::make('Total 5W1H Semua', $totalReports),
-            Stat::make('Total 5W1H-Ku Tulis', $totalMyReports),
-            Stat::make('Total 5W1H-Ku Sebagai Pengikut', $totalFollowedReports),
+            Stat::make('Total laporan', $totalReports)
+                ->description('Semua laporan dalam periode')
+                ->descriptionIcon('heroicon-m-document-text')
+                ->color('primary'),
+            Stat::make('Laporan saya', $totalMyReports)
+                ->description('Laporan yang saya tulis')
+                ->descriptionIcon('heroicon-m-pencil-square')
+                ->color('success'),
+            Stat::make('Diikuti', $totalFollowedReports)
+                ->description('Laporan yang saya ikuti')
+                ->descriptionIcon('heroicon-m-user-group')
+                ->color('info'),
         ];
     }
 }

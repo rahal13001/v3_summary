@@ -9,7 +9,11 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 class ReportsPerIndicatorChart extends ChartWidget
 {
     use InteractsWithPageFilters;
-    protected static ?string $heading = '5W1H Per IKU';
+    protected ?string $heading = '5W1H Per IKU';
+
+    protected ?string $description = 'Bandingkan jumlah laporan berdasarkan indikator kinerja.';
+
+    protected ?string $maxHeight = '290px';
 
     protected static ?int $sort = 3;
 
@@ -17,8 +21,8 @@ class ReportsPerIndicatorChart extends ChartWidget
 
     protected function getData(): array
     {
-        $startDate = $this->filters['startDate'] ?? null;
-        $endDate = $this->filters['endDate'] ?? null;
+        $startDate = $this->pageFilters['startDate'] ?? null;
+        $endDate = $this->pageFilters['endDate'] ?? null;
 
         $indicators = Indicator::query()->where('status_iku', 'aktif')
             ->withCount([
@@ -97,6 +101,8 @@ class ReportsPerIndicatorChart extends ChartWidget
                     ],
                     
                     'borderWidth' => 1,
+                    'borderRadius' => 8,
+                    'borderSkipped' => false,
                 ],
             ],
         ];
@@ -107,9 +113,24 @@ class ReportsPerIndicatorChart extends ChartWidget
     protected function getOptions(): array
     {
         return [
+            'responsive' => true,
+            'maintainAspectRatio' => false,
             'plugins' => [
                 'legend' => [
                     'display' => false,
+                ],
+            ],
+            'scales' => [
+                'x' => [
+                    'grid' => [
+                        'display' => false,
+                    ],
+                ],
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => [
+                        'precision' => 0,
+                    ],
                 ],
             ],
         ];

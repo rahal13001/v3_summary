@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\TokenWebController;
+use App\Http\Controllers\PublicStorageController;
 use App\Http\Controllers\Summary\ReportController;
 use App\Http\Controllers\SignatureverificationController;
 
@@ -10,6 +11,9 @@ use App\Http\Controllers\SignatureverificationController;
 //     return view('welcome');
 // });
 Route::get('/pdf/{report}', PdfController::class)->name('pdf');
+
+Route::get('/public-storage/{path}', PublicStorageController::class)->where('path', '.*')->name('public-storage.show');
+Route::get('/storage/{path}', PublicStorageController::class)->where('path', '.*')->name('storage.public');
 
 Route::get('/cek-ttd/{report}', SignatureverificationController::class)->name('signatureverification');
 

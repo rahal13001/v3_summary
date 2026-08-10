@@ -2,255 +2,305 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Support\Enums\Size;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\BulkAction;
+use Illuminate\Database\Eloquent\Collection;
+use Filament\Support\Enums\IconSize;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Group;
+use App\Filament\Resources\ReportResource\Pages\ListReports;
+use App\Filament\Resources\ReportResource\Pages\CreateReport;
+use App\Filament\Resources\ReportResource\Pages\ViewReport;
+use App\Filament\Resources\ReportResource\Pages\EditReport;
 use Filament\Forms;
 use App\Models\Team;
 use App\Models\User;
 use Filament\Tables;
 use App\Models\Report;
 use App\Exports\ReportsExport;
-use Filament\Forms\Form;
 use App\Models\Indicator;
 use Filament\Tables\Table;
-use App\Models\Documentation;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use App\Infolists\Components\How;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Contracts\View\View;
 use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\Select;
-use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\FontWeight;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Filters\SelectFilter;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Infolists\Components\Section;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\ImageEntry;
 use App\Filament\Resources\ReportResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Infolists\Components\Group as ListGroup;
-use Saade\FilamentAutograph\Forms\Components\SignaturePad;
+use App\Filament\Forms\Components\SignaturePad;
 use App\Filament\Resources\ReportResource\RelationManagers;
 use DiscoveryDesign\FilamentGaze\Forms\Components\GazeBanner;
-use Mohamedsabil83\FilamentFormsTinyeditor\Components\TinyEditor;
+use Filament\Forms\Components\RichEditor;
 
 class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document';
     protected static ?int $navigationSort = 1;
     protected static ?string $slug = 'laporan-5w1h';
 
-    protected static ?string $navigationGroup = 'Executive Summary';
+    protected static string | \UnitEnum | null $navigationGroup = 'Executive Summary';
 
     // protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 GazeBanner::make()
                     ->pollTimer(10)
                     ->lock()
                     ->hideOnCreate()
                     ->canTakeControl(),
-                Forms\Components\Select::make('user_id')
-                    ->required()
-                    ->relationship(
-                        name : 'user',
-                        titleAttribute:'name',
-                        modifyQueryUsing: fn ($query) => $query->where('status', 1)
-                    )
-                    // ->options(User::all()->where('status', 1)->pluck('name', 'id'))
-                    ->preload()
-                    ->default(Auth::user()->id)
-                    ->label('Penyusun')
-                    ->searchable()
-                    ->searchPrompt('Cari nama pegawai LPSPL Sorong')
-                    ->columnSpanFull(),
-                
-                Forms\Components\Select::make('followers.name')
-                    ->nullable()
-                    ->relationship(
-                        name : 'followers',
-                        titleAttribute:'name',
-                        modifyQueryUsing: fn ($query) => $query->where('status', 1)
-                    )
-                    // ->options(User::all()->where('status', 1)->pluck('name', 'id'))
-                    ->preload()
-                    ->label('Pengikut')
-                    ->searchable()
-                    ->searchPrompt('Cari nama pegawai LPSPL Sorong')
-                    ->multiple()
-                    ->searchPrompt('Cari nama pegawai LPSPL Sorong')
-                    ->columnSpanFull(),
-                                
-                Forms\Components\TextInput::make('no_st')
-                    ->maxLength(255)
-                    ->nullable()
-                    ->columnSpanFull(),
-                
-                
-                Forms\Components\Textarea::make('what')
-                    ->required()
-                    ->columnSpanFull(),
-                
-                Forms\Components\Select::make('indicator_id')
-                    ->relationship(
-                        name: 'indicators',
-                        titleAttribute: 'nama_iku',
-                        modifyQueryUsing: fn ($query) => $query->where('status_iku', 'aktif')
-                    )
-                    ->label('IKU')
-                    // ->options(Indicator::where('status_iku', 'aktif')->pluck('nama_iku', 'id'))
-                    ->preload()
-                    ->multiple()
-                    ->searchable()
-                    ->searchPrompt('Cari indikator')
-                    ->columnSpanFull(),
-
-                Forms\Components\Select::make('team_id')
-                    ->relationship('teams', 'team_id')
-                    ->label('Tim Kerja')
-                    ->options(Team::where('status_tim', 'aktif')->pluck('nama_tim', 'id'))
-                    ->preload()
-                    ->searchable()
-                    ->searchPrompt('Cari Tim Kerja')
-                    ->multiple()
-                    ->columnSpanFull(),
-                
-                Forms\Components\Textarea::make('why')
-                    ->required()
-                    ->columnSpanFull(),
-                
-                Forms\Components\DatePicker::make('when')
-                    ->required(),
-                
-                Forms\Components\DatePicker::make('tanggal_selesai')
-                    ->required(),
-                
-                Forms\Components\Textarea::make('where')
-                    ->required()
-                    ->columnSpanFull(),
-                
-                Forms\Components\Textarea::make('who')
-                    ->required()
-                    ->columnSpanFull(),
-                                
-                TinyEditor::make('how')
-                    ->required()
-                    ->columnSpanFull(),
-                    
-                Forms\Components\TextInput::make('penyelenggara')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('total_peserta')
-                    ->required()
-                    ->numeric()
-                    ->suffix('Orang')
-                    ->maxLength(10),
-                Forms\Components\Radio::make('total_wanita')
-                    ->label('Total Wanita')
-                    ->options([
-                        0 => '0 %',
-                        10 => '10 %',
-                        20 => '20 %',
-                        30 => '30 %',
-                        40 => '40 %',
-                        50 => '50 %',
-                        60 => '60 %',
-                        70 => '70 %',
-                        80 => '80 %',
-                        90 => '90 %',
-                        100 => '100 %',
+                Section::make('Penyusun Laporan')
+                    ->description('Tentukan penyusun, pengikut, dan nomor surat tugas laporan.')
+                    ->icon('heroicon-o-user-group')
+                    ->columns([
+                        'default' => 1,
+                        'md' => 2,
                     ])
-                    ->inline()
-                    ->inlineLabel(false)
-                    ->columnSpanFull()
-                    ->required(),
-               
-                    Fieldset::make('Dokumentasi')
-                    ->relationship('documentation')
                     ->schema([
-                        FileUpload::make('dokumentasi1')
+                        Select::make('user_id')
                             ->required()
-                            ->label('Dokumentasi Kegiatan 1')
-                            ->uploadingMessage('Mengunggah dokumentasi...')
-                            ->disk('public')
-                            ->directory('dokumentasi')
-                            ->visibility('public')
-                            ->image()
-                            ->openable()
-                            ->maxSize(3300),
-                            
-                        
-                        FileUpload::make('dokumentasi2')
-                            ->label('Dokumentasi Kegiatan 2')
-                            ->uploadingMessage('Mengunggah dokumentasi...')
-                            ->disk('public')
-                            ->directory('dokumentasi')
-                            ->visibility('public')
-                            ->image()
-                            ->maxSize(3300)
-                            ->openable(),
-                       
-                        FileUpload::make('dokumentasi3')
-                            ->label('Dokumentasi Kegiatan 3')
-                            ->uploadingMessage('Mengunggah dokumentasi...')
-                            ->disk('public')
-                            ->directory('dokumentasi')
-                            ->visibility('public')
-                            ->image()
-                            ->maxSize(3300)
-                            ->openable(),
-                        
-                        FileUpload::make('st')
-                            ->label('Surat Tugas')
+                            ->relationship(
+                                name: 'user',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn ($query) => $query->where('status', 1),
+                            )
+                            ->preload()
+                            ->default(Auth::user()->id)
+                            ->label('Penyusun')
+                            ->searchable()
+                            ->searchPrompt('Cari nama pegawai LPSPL Sorong'),
+                        Select::make('followers')
                             ->nullable()
-                            ->uploadingMessage('Mengunggah dokumentasi...')
-                            ->disk('public')
-                            ->directory('st')
-                            ->visibility('public')
-                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint', 'image/*'])
-                            ->maxSize(5000)
-                            ->openable(),
-    
-                        FileUpload::make('lainnya')
-                            ->label('Dokumentasi Lainnya')
+                            ->relationship(
+                                name: 'followers',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn ($query) => $query->where('status', 1),
+                            )
+                            ->preload()
+                            ->label('Pengikut')
+                            ->searchable()
+                            ->searchPrompt('Cari nama pegawai LPSPL Sorong')
+                            ->multiple(),
+                        TextInput::make('no_st')
+                            ->maxLength(255)
                             ->nullable()
-                            ->uploadingMessage('Mengunggah dokumentasi...')
-                            ->disk('public')
-                            ->directory('lainnya')
-                            ->visibility('public')
-                            ->openable()
-                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint', 'image/*'])
-                            ->maxSize(10420)
-                            ->openable(),
-                          
+                            ->label('Nomor surat tugas')
+                            ->columnSpanFull(),
                     ]),
+                Section::make('Ringkasan Kegiatan')
+                    ->description('Catat tujuan, jadwal, lokasi, indikator, dan tim kerja kegiatan.')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->columns([
+                        'default' => 1,
+                        'md' => 2,
+                    ])
+                    ->schema([
+                        Textarea::make('what')
+                            ->required()
+                            ->label('What')
+                            ->columnSpanFull(),
+                        Textarea::make('why')
+                            ->required()
+                            ->label('Why')
+                            ->columnSpanFull(),
+                        DatePicker::make('when')
+                            ->required()
+                            ->label('Tanggal mulai'),
+                        DatePicker::make('tanggal_selesai')
+                            ->required()
+                            ->label('Tanggal selesai'),
+                        Textarea::make('where')
+                            ->required()
+                            ->label('Where')
+                            ->columnSpanFull(),
+                        Select::make('indicators')
+                            ->relationship(
+                                name: 'indicators',
+                                titleAttribute: 'nama_iku',
+                                modifyQueryUsing: fn ($query) => $query->where('status_iku', 'aktif'),
+                            )
+                            ->label('IKU')
+                            ->preload()
+                            ->multiple()
+                            ->searchable()
+                            ->searchPrompt('Cari indikator')
+                            ->columnSpanFull(),
+                        Select::make('teams')
+                            ->relationship('teams', 'nama_tim')
+                            ->label('Tim Kerja')
+                            ->options(Team::where('status_tim', 'aktif')->pluck('nama_tim', 'id'))
+                            ->preload()
+                            ->searchable()
+                            ->searchPrompt('Cari Tim Kerja')
+                            ->multiple()
+                            ->columnSpanFull(),
+                    ]),
+                Section::make('Pelaksanaan dan Peserta')
+                    ->description('Lengkapi pelaksana, penyelenggara, peserta, dan uraian pelaksanaan.')
+                    ->icon('heroicon-o-users')
+                    ->columns([
+                        'default' => 1,
+                        'md' => 2,
+                    ])
+                    ->schema([
+                        Textarea::make('who')
+                            ->required()
+                            ->label('Who')
+                            ->columnSpanFull(),
+                        TextInput::make('penyelenggara')
+                            ->required()
+                            ->label('Penyelenggara')
+                            ->maxLength(255),
+                        TextInput::make('total_peserta')
+                            ->required()
+                            ->label('Total peserta')
+                            ->numeric()
+                            ->suffix('Orang')
+                            ->maxLength(10),
+                        Radio::make('total_wanita')
+                            ->label('Persentase wanita')
+                            ->options([
+                                0 => '0 %',
+                                10 => '10 %',
+                                20 => '20 %',
+                                30 => '30 %',
+                                40 => '40 %',
+                                50 => '50 %',
+                                60 => '60 %',
+                                70 => '70 %',
+                                80 => '80 %',
+                                90 => '90 %',
+                                100 => '100 %',
+                            ])
+                            ->inline()
+                            ->inlineLabel(false)
+                            ->columnSpanFull()
+                            ->required(),
+                        RichEditor::make('how')
+                            ->required()
+                            ->label('How')
+                            ->toolbarButtons([
+                                ['bold', 'italic', 'underline', 'strike'],
+                                ['h2', 'h3'],
+                                ['bulletList', 'orderedList', 'blockquote'],
+                                ['link'],
+                                ['table'],
+                                ['undo', 'redo'],
+                            ])
+                            ->fileAttachments(false)
+                            ->columnSpanFull(),
+                    ]),
+                Section::make('Dokumentasi')
+                    ->description('Unggah foto kegiatan, surat tugas, dan dokumentasi tambahan yang relevan.')
+                    ->icon('heroicon-o-camera')
+                    ->columns([
+                        'default' => 1,
+                        'md' => 2,
+                    ])
+                    ->schema([
+                        Fieldset::make('Berkas dokumentasi')
+                            ->relationship('documentation')
+                            ->columns([
+                                'default' => 1,
+                                'md' => 2,
+                                'xl' => 3,
+                            ])
+                            ->columnSpanFull()
+                            ->schema([
+                                FileUpload::make('dokumentasi1')
+                                    ->required()
+                                    ->label('Dokumentasi Kegiatan 1')
+                                    ->uploadingMessage('Mengunggah dokumentasi...')
+                                    ->disk('public')
+                                    ->directory('dokumentasi')
+                                    ->visibility('public')
+                                    ->image()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->openable()
+                                    ->maxSize(3300),
+                                FileUpload::make('dokumentasi2')
+                                    ->label('Dokumentasi Kegiatan 2')
+                                    ->uploadingMessage('Mengunggah dokumentasi...')
+                                    ->disk('public')
+                                    ->directory('dokumentasi')
+                                    ->visibility('public')
+                                    ->image()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(3300)
+                                    ->openable(),
+                                FileUpload::make('dokumentasi3')
+                                    ->label('Dokumentasi Kegiatan 3')
+                                    ->uploadingMessage('Mengunggah dokumentasi...')
+                                    ->disk('public')
+                                    ->directory('dokumentasi')
+                                    ->visibility('public')
+                                    ->image()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(3300)
+                                    ->openable(),
+                                FileUpload::make('st')
+                                    ->label('Surat Tugas')
+                                    ->nullable()
+                                    ->uploadingMessage('Mengunggah dokumentasi...')
+                                    ->disk('public')
+                                    ->directory('st')
+                                    ->visibility('public')
+                                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(5000)
+                                    ->openable(),
+                                FileUpload::make('lainnya')
+                                    ->label('Dokumentasi Lainnya')
+                                    ->nullable()
+                                    ->uploadingMessage('Mengunggah dokumentasi...')
+                                    ->disk('public')
+                                    ->directory('lainnya')
+                                    ->visibility('public')
+                                    ->openable()
+                                    ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'image/jpeg', 'image/png', 'image/webp'])
+                                    ->maxSize(10420),
+                            ]),
+                    ]),
+                Section::make('Pengesahan')
+                    ->description('Tanda tangan disimpan bersama laporan untuk proses pengesahan.')
+                    ->icon('heroicon-o-pencil-square')
+                    ->schema([
                         SignaturePad::make('kode')
-                            ->label(__('Tanda Tangan Disini'))
-                            ->dotSize(1.5)
-                            ->lineMinWidth(0.5)
-                            ->lineMaxWidth(2.5)
-                            ->throttle(16)
-                            ->minDistance(5)
-                            ->velocityFilterWeight(0.7)
-                            ->exportPenColor('#0000FF') 
-                            ->columns(4),
-                ]);
+                            ->label('Tanda Tangan Penyusun')
+                            ->helperText('Pastikan tanda tangan terlihat jelas sebelum menyimpan laporan.')
+                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->columnSpanFull(),
+                    ]),
+                ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
@@ -293,7 +343,7 @@ class ReportResource extends Resource
             ->defaultSort('when', 'desc')
             ->filters([
                 Filter::make('when')
-                ->form([
+                ->schema([
                     DatePicker::make('created_from')
                         ->label('Tanggal Mulai'),
                     DatePicker::make('created_until')
@@ -320,7 +370,7 @@ class ReportResource extends Resource
                     ->multiple()
                     ->searchable()
                     ->options(function () {
-                        return \App\Models\Indicator::select('id', 'nama_iku', 'tahun_iku')
+                        return Indicator::select('id', 'nama_iku', 'tahun_iku')
                             ->orderByDesc('tahun_iku')    
                             ->get()
                             ->mapWithKeys(function ($item) {
@@ -340,7 +390,7 @@ class ReportResource extends Resource
                 SelectFilter::make('teams')
                     ->relationship('teams', 'nama_tim')
                     ->label('Tim Kerja')
-                    ->options(Team::pluck('nama_tim'))
+                    ->options(Team::pluck('nama_tim', 'id'))
                     ->preload()
                     ->multiple()
                     ->indicator('Tim Kerja')
@@ -354,29 +404,29 @@ class ReportResource extends Resource
                     ->multiple()
                     ->searchable(),
                 
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
 
             ],layout: FiltersLayout::Modal )
             ->filtersFormColumns(3)
 
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
+                    ViewAction::make(),
                     // Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
+                    DeleteAction::make(),
                 ])
                     ->label('Aksi')
                     ->icon('heroicon-m-ellipsis-vertical')
-                    ->size(ActionSize::Small)
+                    ->size(Size::Small)
                     ->color('primary')
                     ->button(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                    Tables\Actions\BulkAction::make('export_excel')
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                    BulkAction::make('export_excel')
                         ->label('Export Excel')
                         ->icon('heroicon-m-arrow-down-tray')
                         ->modalHeading('Export Excel')
@@ -384,7 +434,7 @@ class ReportResource extends Resource
                         ->modalSubmitActionLabel('Export sekarang')
                         ->requiresConfirmation()
                         ->deselectRecordsAfterCompletion()
-                        ->action(fn (\Illuminate\Database\Eloquent\Collection $records) => Excel::download(
+                        ->action(fn (Collection $records) => Excel::download(
                             new ReportsExport($records),
                             'laporan-5w1h-' . now()->format('Ymd-His') . '.xlsx',
                         )),
@@ -393,160 +443,256 @@ class ReportResource extends Resource
     }
 
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        
-            $dokumentasi = Documentation::where('report_id', $infolist->record->id)
-                ->first(['dokumentasi1', 'dokumentasi2', 'dokumentasi3', 'st', 'lainnya']);
+        $report = $schema->getRecord();
+        $dokumentasi = $report?->documentation;
+        $publicFileUrl = static function (?string $path): ?string {
+            $path = ltrim(trim($path ?? ''), '/');
 
-            $documentationSchema = [];
-            $otherDocumentation = [];
-
-            if ($dokumentasi->dokumentasi1){
-                $documentationSchema[] = ImageEntry::make('documentation.dokumentasi1')
-                    ->height(300)
-                    ->url(asset( $dokumentasi->dokumentasi1), '_blank')
-                    ->label('Dokumentasi Kegiatan 2');
-            }
-            if ($dokumentasi->dokumentasi2){
-                $documentationSchema[] = ImageEntry::make('documentation.dokumentasi2')
-                    ->height(300)
-                    ->url(asset( $dokumentasi->dokumentasi2), '_blank')
-                    ->label('Dokumentasi Kegiatan 2');
+            if (blank($path)) {
+                return null;
             }
 
-            if ($dokumentasi->dokumentasi3){
-                $documentationSchema[] = ImageEntry::make('documentation.dokumentasi3')
-                    ->height(300)
-                    ->url(asset( $dokumentasi->dokumentasi3), '_blank')
-                    ->label('Dokumentasi Kegiatan 3');
+            try {
+                if (! Storage::disk('public')->exists($path)) {
+                    return null;
+                }
+
+                return Storage::disk('public')->url($path);
+            } catch (\Throwable) {
+                return null;
             }
+        };
 
-            if ($dokumentasi->st){
-                $otherDocumentation[] = IconEntry::make('documentation.st')
-                    ->label('Surat Tugas')
-                    ->size(IconEntry\IconEntrySize::Large)
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->url(asset( $dokumentasi->st), '_blank');
-            }
+        $documentationSchema = [];
+        $otherDocumentation = [];
 
-            if ($dokumentasi->lainnya){
-                $otherDocumentation[] = 
-                    IconEntry::make('documentation.lainnya')
-                    ->label('Dokumentasi Lainnya')
-                    ->size(IconEntry\IconEntrySize::Large)
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->url(asset( $dokumentasi->lainnya), '_blank');
-            }
+        if ($url = $publicFileUrl($dokumentasi?->dokumentasi1)) {
+            $documentationSchema[] = ImageEntry::make('documentation.dokumentasi1')
+                ->height(300)
+                ->url($url, '_blank')
+                ->extraImgAttributes(['class' => 'report-infolist-media'])
+                ->label('Dokumentasi Kegiatan 1');
+        }
+
+        if ($url = $publicFileUrl($dokumentasi?->dokumentasi2)) {
+            $documentationSchema[] = ImageEntry::make('documentation.dokumentasi2')
+                ->height(300)
+                ->url($url, '_blank')
+                ->extraImgAttributes(['class' => 'report-infolist-media'])
+                ->label('Dokumentasi Kegiatan 2');
+        }
+
+        if ($url = $publicFileUrl($dokumentasi?->dokumentasi3)) {
+            $documentationSchema[] = ImageEntry::make('documentation.dokumentasi3')
+                ->height(300)
+                ->url($url, '_blank')
+                ->extraImgAttributes(['class' => 'report-infolist-media'])
+                ->label('Dokumentasi Kegiatan 3');
+        }
+
+        if ($url = $publicFileUrl($dokumentasi?->st)) {
+            $otherDocumentation[] = IconEntry::make('documentation.st')
+                ->label('Surat Tugas')
+                ->size(IconSize::Large)
+                ->icon('heroicon-o-eye')
+                ->color('info')
+                ->url($url, '_blank');
+        }
+
+        if ($url = $publicFileUrl($dokumentasi?->lainnya)) {
+            $otherDocumentation[] = IconEntry::make('documentation.lainnya')
+                ->label('Dokumentasi Lainnya')
+                ->size(IconSize::Large)
+                ->icon('heroicon-o-eye')
+                ->color('info')
+                ->url($url, '_blank');
+        }
 
 
-            return $infolist
+        $components = [
+            Section::make('Informasi Penyusun')
+                ->description('Identitas penyusun dan referensi surat tugas laporan.')
+                ->icon('heroicon-o-user-group')
+                ->extraAttributes(['class' => 'report-infolist-section report-infolist-section--author'])
+                ->columns([
+                    'default' => 1,
+                    'md' => 3,
+                ])
                 ->schema([
-                    Section::make('Informasi Penyusun')
-                    ->schema([
-                        TextEntry::make('user.name')
-                            ->label('Penyusun')
-                            ->weight(FontWeight::Bold),
-                        TextEntry::make('followers.name')
-                            ->listWithLineBreaks()
-                            ->bulleted()
-                            ->weight(FontWeight::Bold)
-                            ->label('Pengikut'),
-                        TextEntry::make('no_st')
-                            ->weight(FontWeight::Bold)
-                            ->label('No ST'),
-                    ])->columns(2)
-                    ->collapsible(),
+                    TextEntry::make('user.name')
+                        ->label('Penyusun')
+                        ->weight(FontWeight::SemiBold)
+                        ->extraAttributes(['class' => 'report-infolist-value']),
+                    TextEntry::make('followers.name')
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->label('Pengikut')
+                        ->placeholder('Tidak ada pengikut')
+                        ->columnSpan(1)
+                        ->extraAttributes(['class' => 'report-infolist-value']),
+                    TextEntry::make('no_st')
+                        ->label('Nomor surat tugas')
+                        ->placeholder('Belum diisi')
+                        ->extraAttributes(['class' => 'report-infolist-value']),
+                ])
+                ->collapsible()
+                ->columnSpanFull(),
 
-                    Section::make('Informasi Kegiatan')
+            Section::make('Informasi Kegiatan')
+                ->description('Ringkasan tujuan, waktu, lokasi, indikator, dan tim kerja.')
+                ->icon('heroicon-o-clipboard-document-list')
+                ->extraAttributes(['class' => 'report-infolist-section report-infolist-section--activity'])
+                ->columns([
+                    'default' => 1,
+                    'md' => 2,
+                ])
+                ->schema([
+                    TextEntry::make('what')
+                        ->label('What')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'report-infolist-value report-infolist-value--long']),
+                    TextEntry::make('why')
+                        ->label('Why')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'report-infolist-value report-infolist-value--long']),
+                    Group::make()
                         ->schema([
-                            TextEntry::make('what')
-                                ->weight(FontWeight::Bold)
-                                ->label('What'),
-                            ListGroup::make()
-                                ->schema([
-                                    TextEntry::make('when')
-                                        ->date('d-m-Y')
-                                        ->weight(FontWeight::Bold)
-                                        ->label('Tanggal Mulai'),
-                                    TextEntry::make('tanggal_selesai')
-                                        ->date('d-m-Y')
-                                        ->weight(FontWeight::Bold)
-                                        ->label('Tanggal Selesai'),
-                                ])->columns(2),
-                            TextEntry::make('where')
-                                ->weight(FontWeight::Bold)
-                                ->label('Where'),
-                            TextEntry::make('indicators.nama_iku')
-                                ->listWithLineBreaks()
-                                ->bulleted()
-                                ->weight(FontWeight::Bold)
-                                ->label('IKU'),
-                            TextEntry::make('teams.nama_tim')
-                                ->listWithLineBreaks()
-                                ->bulleted()
-                                ->weight(FontWeight::Bold)
-                                ->label('Tim Kerja'),
-                            
-                        
-                        ]) ->collapsible(),
-
-                    Section::make('Informasi Peserta')
-                        ->schema([
-                            TextEntry::make('penyelenggara')
-                                ->weight(FontWeight::Bold)
-                                ->label('Penyelenggara'),
-                            TextEntry::make('who')
-                                ->weight(FontWeight::Bold)
-                                ->label('Who'),
-                            ListGroup::make()
-                                ->schema([
-                                    TextEntry::make('total_peserta')
-                                        ->weight(FontWeight::Bold)
-                                        ->label('Total Peserta')
-                                        ->suffix(' orang'),
-                                    TextEntry::make('total_wanita')
-                                        ->weight(FontWeight::Bold)
-                                        ->suffix('%')
-                                        ->label('Persentase Wanita'),
-                                ])->columns(2),
-                        ]) ->collapsible(),
-
-                    Section::make('Informasi Pelaksanaan')
-                        ->schema([
-                            TextEntry::make('how')
-                            // ->html()
-                            ->formatStateUsing(fn (string $state): View => view(
-                                'infolists.components.how',
-                                ['state' => $state],
-                            ))
-                            ->label('How'),
-                            TextEntry::make('created_at')
+                            TextEntry::make('when')
                                 ->date('d-m-Y')
-                                ->weight(FontWeight::Bold)
-                                ->label('Tanggal Penyusunan'),
-                        ]) ->collapsible(),
-                    
-                    Section::make('Dokumentasi Kegiatan')
-                        ->schema($documentationSchema)
-                        ->columns(2)
-                        ->collapsible(),
-                    Section::make('Dokumentasi Tambahan')
-                        ->schema($otherDocumentation)
-                        ->columns(2)
-                        ->collapsible(),
-                    Section::make('Tanda Tangan')
-                        ->schema([
-                            ImageEntry::make('kode')
-                                ->height(150)
-                                ->label('Tanda Tangan Penyusun')
+                                ->label('Tanggal mulai')
+                                ->extraAttributes(['class' => 'report-infolist-value']),
+                            TextEntry::make('tanggal_selesai')
+                                ->date('d-m-Y')
+                                ->label('Tanggal selesai')
+                                ->extraAttributes(['class' => 'report-infolist-value']),
                         ])
-                        ->columns(1)
-                        ->collapsible(),
-                        
-            ]);
+                        ->columns(2)
+                        ->columnSpanFull(),
+                    TextEntry::make('where')
+                        ->label('Where')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'report-infolist-value report-infolist-value--long']),
+                    TextEntry::make('indicators.nama_iku')
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->label('IKU')
+                        ->placeholder('Belum ditentukan')
+                        ->extraAttributes(['class' => 'report-infolist-value']),
+                    TextEntry::make('teams.nama_tim')
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->label('Tim kerja')
+                        ->placeholder('Belum ditentukan')
+                        ->extraAttributes(['class' => 'report-infolist-value']),
+                ])
+                ->collapsible()
+                ->columnSpanFull(),
+
+            Section::make('Informasi Peserta')
+                ->description('Penyelenggara, pihak yang terlibat, dan komposisi peserta.')
+                ->icon('heroicon-o-users')
+                ->extraAttributes(['class' => 'report-infolist-section report-infolist-section--participants'])
+                ->columns([
+                    'default' => 1,
+                    'md' => 2,
+                ])
+                ->schema([
+                    TextEntry::make('penyelenggara')
+                        ->label('Penyelenggara')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'report-infolist-value report-infolist-value--long']),
+                    TextEntry::make('who')
+                        ->label('Who')
+                        ->columnSpanFull()
+                        ->extraAttributes(['class' => 'report-infolist-value report-infolist-value--long']),
+                    Group::make()
+                        ->schema([
+                            TextEntry::make('total_peserta')
+                                ->label('Total peserta')
+                                ->suffix(' orang')
+                                ->extraAttributes(['class' => 'report-infolist-value']),
+                            TextEntry::make('total_wanita')
+                                ->label('Persentase wanita')
+                                ->suffix('%')
+                                ->extraAttributes(['class' => 'report-infolist-value']),
+                        ])
+                        ->columns(2)
+                        ->columnSpanFull(),
+                ])
+                ->collapsible()
+                ->columnSpanFull(),
+
+            Section::make('Informasi Pelaksanaan')
+                ->description('Uraian lengkap pelaksanaan kegiatan dan tanggal penyusunan.')
+                ->icon('heroicon-o-document-text')
+                ->extraAttributes(['class' => 'report-infolist-section report-infolist-section--execution'])
+                ->columns(1)
+                ->schema([
+                    TextEntry::make('how')
+                        ->formatStateUsing(fn (?string $state): View => view(
+                            'infolists.components.how',
+                            ['state' => $state],
+                        ))
+                        ->label('How')
+                        ->extraAttributes(['class' => 'report-infolist-rich-text'])
+                        ->columnSpanFull(),
+                    TextEntry::make('created_at')
+                        ->date('d-m-Y')
+                        ->label('Tanggal penyusunan')
+                        ->extraAttributes(['class' => 'report-infolist-value']),
+                ])
+                ->collapsible()
+                ->columnSpanFull(),
+        ];
+
+        if ($documentationSchema !== []) {
+            $components[] = Section::make('Dokumentasi Kegiatan')
+                ->description('Foto kegiatan yang tersedia pada penyimpanan lokal.')
+                ->icon('heroicon-o-camera')
+                ->extraAttributes(['class' => 'report-infolist-section report-infolist-section--documentation'])
+                ->schema($documentationSchema)
+                ->columns([
+                    'default' => 1,
+                    'md' => 2,
+                    'xl' => 3,
+                ])
+                ->collapsible()
+                ->columnSpanFull();
+        }
+
+        if ($otherDocumentation !== []) {
+            $components[] = Section::make('Dokumentasi Tambahan')
+                ->description('Buka surat tugas atau berkas dokumentasi tambahan.')
+                ->icon('heroicon-o-paper-clip')
+                ->extraAttributes(['class' => 'report-infolist-section report-infolist-section--attachments'])
+                ->schema($otherDocumentation)
+                ->columns([
+                    'default' => 1,
+                    'md' => 2,
+                ])
+                ->collapsible()
+                ->columnSpanFull();
+        }
+
+        $components[] = Section::make('Tanda Tangan')
+            ->description('Tanda tangan penyusun yang tersimpan bersama laporan.')
+            ->icon('heroicon-o-pencil-square')
+            ->extraAttributes(['class' => 'report-infolist-section report-infolist-section--signature'])
+            ->schema([
+                ImageEntry::make('kode')
+                    ->height(150)
+                    ->extraImgAttributes(['class' => 'signature-preview__image report-infolist-signature'])
+                    ->label('Tanda tangan penyusun'),
+            ])
+            ->columns(1)
+            ->collapsible()
+            ->columnSpanFull();
+
+        return $schema
+            ->components($components)
+            ->columns(1);
     }
 
     public static function getRelations(): array
@@ -559,10 +705,10 @@ class ReportResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReports::route('/'),
-            'create' => Pages\CreateReport::route('/create'),
-            'view' => Pages\ViewReport::route('/{record}'),
-            'edit' => Pages\EditReport::route('/{record}/edit'),
+            'index' => ListReports::route('/'),
+            'create' => CreateReport::route('/create'),
+            'view' => ViewReport::route('/{record}'),
+            'edit' => EditReport::route('/{record}/edit'),
         ];
     }
 
