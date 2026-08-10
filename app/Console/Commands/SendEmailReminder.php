@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Carbon\Carbon;
 use App\Models\Order;
 use Illuminate\Console\Command;
@@ -31,7 +32,7 @@ class SendEmailReminder extends Command
      */
     public function handle()
     {
-        $orders = Order::with('executor')->where('order_date', '=', Carbon::now()->toDateString())
+        $orders = Order::with('executor.user')->where('order_date', '=', Carbon::now()->toDateString())
             ->get();
 
             foreach ($orders as $order) {
@@ -42,7 +43,7 @@ class SendEmailReminder extends Command
                         try {
                             Mail::to($user->email)->send(new OrderReminder($user, $order));
                             Log::info('Email reminder sent to user ID: ' . $user->id);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             Log::error('Failed to send email reminder: ' . $e->getMessage());
                         }
                     }

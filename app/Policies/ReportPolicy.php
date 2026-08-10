@@ -39,7 +39,7 @@ class ReportPolicy
      */
     public function update(User $user, Report $report): bool
     {
-        return $user->can('update_report');
+        return $user->can('update_report') && $this->canManage($user, $report);
     }
 
     /**
@@ -47,7 +47,7 @@ class ReportPolicy
      */
     public function delete(User $user, Report $report): bool
     {
-        return $user->can('delete_report');
+        return $user->can('delete_report') && $this->canManage($user, $report);
     }
 
     /**
@@ -55,7 +55,7 @@ class ReportPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_report');
+        return false;
     }
 
     /**
@@ -63,7 +63,7 @@ class ReportPolicy
      */
     public function forceDelete(User $user, Report $report): bool
     {
-        return $user->can('force_delete_report');
+        return $user->can('force_delete_report') && $this->canManage($user, $report);
     }
 
     /**
@@ -71,7 +71,7 @@ class ReportPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_report');
+        return false;
     }
 
     /**
@@ -79,7 +79,7 @@ class ReportPolicy
      */
     public function restore(User $user, Report $report): bool
     {
-        return $user->can('restore_report');
+        return $user->can('restore_report') && $this->canManage($user, $report);
     }
 
     /**
@@ -87,7 +87,7 @@ class ReportPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_report');
+        return false;
     }
 
     /**
@@ -95,7 +95,7 @@ class ReportPolicy
      */
     public function replicate(User $user, Report $report): bool
     {
-        return $user->can('replicate_report');
+        return $user->can('replicate_report') && $this->canManage($user, $report);
     }
 
     /**
@@ -104,5 +104,20 @@ class ReportPolicy
     public function reorder(User $user): bool
     {
         return $user->can('reorder_report');
+    }
+
+    private function canManage(User $user, Report $report): bool
+    {
+        if ($user->hasRole(['admin', 'super_admin'])) {
+            return true;
+        }
+
+        if ($report->user_id !== null && (string) $report->user_id === (string) $user->getKey()) {
+            return true;
+        }
+
+        return $report->followers->contains(
+            fn (User $follower): bool => $follower->is($user),
+        );
     }
 }

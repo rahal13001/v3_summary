@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 
+use Exception;
 use Carbon\Carbon;
 use App\Models\Order;
 use App\Services\FCMservice;
@@ -37,7 +38,7 @@ class SendOrderNotifications extends Command
 
     public function handle()
     {
-        $orders = Order::with('executor')->where('order_date', '=', Carbon::now()->addHour()->toDateString())
+        $orders = Order::with('executor.user')->where('order_date', '=', Carbon::now()->addHour()->toDateString())
         ->whereRaw('TIME_FORMAT(order_time, "%H:%i") = ?', [Carbon::now()->addHour()->format('H:i')])
         ->get();
         
@@ -62,7 +63,7 @@ class SendOrderNotifications extends Command
                             ]
                         );
                         // Log::info('Notification sent to user ID: ' . $user->id);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         Log::error('Failed to send notification: ' . $e->getMessage());
                     }
                 }
