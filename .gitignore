@@ -3,6 +3,7 @@
 #/public/build
 /public/hot
 /public/storage
+/graphify-out/
 /storage/*.key
 /vendor
 .env
