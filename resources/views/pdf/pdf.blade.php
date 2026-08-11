@@ -201,6 +201,21 @@
             {{ $iku->nama_iku }} (IKU : {{ $iku->nomor_iku }})
         @endforeach</td>
       </tr>
+      <tr>
+        <td>Unit Kerja</td>
+        <td>:</td>
+        <td>{{ $report->workUnits->pluck('name')->join(', ') ?: 'Belum ditentukan' }}</td>
+      </tr>
+      <tr>
+        <td>Keterlibatan</td>
+        <td>:</td>
+        <td>{{ $report->involvement?->name ?? 'Belum ditentukan' }}</td>
+      </tr>
+      <tr>
+        <td>Penyelenggara</td>
+        <td>:</td>
+        <td>{{ $report->penyelenggara ?? 'Belum ditentukan' }}</td>
+      </tr>
       <!-- Pihak Yang Terlibat -->
       <tr>
         <td>Pihak Yang Terlibat</td>

@@ -14,6 +14,15 @@ class PdfController extends Controller
 {
     public function __invoke(Report $report)
     {
+        $report->loadMissing([
+            'documentation',
+            'followers',
+            'indicators',
+            'involvement',
+            'user',
+            'workUnits',
+        ]);
+
         $documentation = $report->documentation;
         $publicDisk = Storage::disk('public');
         $documentationFiles = [];
@@ -35,7 +44,7 @@ class PdfController extends Controller
         }
 
         $qrReport = Builder::create()
-            ->writer(new PngWriter())
+            ->writer(new PngWriter)
             ->writerOptions([])
             ->data(route('pdf', ['report' => $report->getRouteKey()]))
             ->encoding(new Encoding('UTF-8'))
@@ -59,7 +68,7 @@ class PdfController extends Controller
                 }
 
                 return Builder::create()
-                    ->writer(new PngWriter())
+                    ->writer(new PngWriter)
                     ->writerOptions([])
                     ->data($publicDisk->url($path))
                     ->encoding(new Encoding('UTF-8'))
@@ -83,6 +92,6 @@ class PdfController extends Controller
             'q_lainnya' => $qLainnya,
             'q_st' => $qSt,
             'documentationFiles' => $documentationFiles,
-        ])->stream($report->what . '.pdf');
+        ])->stream($report->what.'.pdf');
     }
 }
