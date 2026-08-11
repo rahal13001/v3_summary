@@ -19,3 +19,16 @@ $configCachePath = dirname(__DIR__).DIRECTORY_SEPARATOR.str_replace(['/', '\\'],
 if (is_file($configCachePath)) {
     throw new RuntimeException('The PHPUnit-specific configuration cache must not exist.');
 }
+
+$testStoragePath = sys_get_temp_dir()
+    .DIRECTORY_SEPARATOR
+    .'summary-laravel-tests-'
+    .substr(hash('sha256', dirname(__DIR__)), 0, 12);
+$compiledViewsPath = $testStoragePath.DIRECTORY_SEPARATOR.'framework'.DIRECTORY_SEPARATOR.'views';
+
+if (! is_dir($compiledViewsPath) && ! mkdir($compiledViewsPath, 0777, true) && ! is_dir($compiledViewsPath)) {
+    throw new RuntimeException("Unable to create the isolated test storage path [{$compiledViewsPath}].");
+}
+
+$_ENV['LARAVEL_STORAGE_PATH'] = $testStoragePath;
+$_SERVER['LARAVEL_STORAGE_PATH'] = $testStoragePath;
