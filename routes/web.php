@@ -24,4 +24,6 @@ Route::get('lihat_lainnya/{lainnya_upload}',[ReportController::class, 'viewlainn
 
 //Lihat dokumentasi st
 Route::get('lihat_st/{st_upload}',[ReportController::class, 'viewst'])->name('view_st');
-Route::post('webtoken',TokenWebController::class, 'webtoken')->name('webtoken');
+Route::post('webtoken', TokenWebController::class)
+    ->middleware('auth')
+    ->name('webtoken');

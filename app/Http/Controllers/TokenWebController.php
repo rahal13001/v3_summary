@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class TokenWebController extends Controller
 {
@@ -12,7 +11,7 @@ class TokenWebController extends Controller
      */
     public function __invoke(Request $request)
     {
-        Auth::user()->update([
+        $request->user()->update([
             'fcm_token' => $request->fcm_token,
         ]);
 
