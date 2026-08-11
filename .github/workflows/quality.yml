@@ -20,9 +20,10 @@ jobs:
     env:
       APP_ENV: testing
       APP_KEY: base64:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      APP_URL: http://localhost
       CACHE_STORE: array
       DB_CONNECTION: sqlite
-      DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
+      DB_DATABASE: ':memory:'
       MAIL_MAILER: array
       QUEUE_CONNECTION: sync
       SESSION_DRIVER: array
@@ -47,9 +48,6 @@ jobs:
 
       - name: Audit locked PHP dependencies
         run: composer audit --locked --no-interaction
-
-      - name: Create isolated SQLite database
-        run: touch database/database.sqlite
 
       - name: Verify a fresh migration
         run: php artisan migrate:fresh --force --no-interaction
