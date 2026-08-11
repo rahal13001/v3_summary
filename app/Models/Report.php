@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Report extends Model
 {
@@ -18,6 +16,7 @@ class Report extends Model
 
     protected $fillable = [
         'user_id',
+        'involvement_id',
         'slug',
         'no_st',
         'what',
@@ -30,10 +29,10 @@ class Report extends Model
         'penyelenggara',
         'total_peserta',
         'total_wanita',
-        'kode'
+        'kode',
     ];
 
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom(['when', 'what'])
@@ -65,11 +64,18 @@ class Report extends Model
         return $this->belongsToMany(Team::class, 'report_teams', 'report_id', 'team_id');
     }
 
+    public function workUnits()
+    {
+        return $this->belongsToMany(WorkUnit::class, 'report_work_unit', 'report_id', 'work_unit_id');
+    }
+
+    public function involvement()
+    {
+        return $this->belongsTo(Involvement::class);
+    }
 
     public function getRouteKeyName()
     {
         return 'slug';
     }
-
-
 }

@@ -2,7 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Involvement;
+use App\Models\Report;
 use App\Models\User;
+use App\Models\WorkUnit;
+use Database\Seeders\InvolvementSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -97,6 +101,66 @@ class ReportOrganizationDimensionsTest extends TestCase
         $this->expectException(QueryException::class);
 
         DB::table('involvements')->where('id', $involvementId)->delete();
+    }
+
+    public function test_report_and_work_unit_have_a_many_to_many_relationship(): void
+    {
+        $report = Report::query()->findOrFail($this->createReport());
+        $workUnit = WorkUnit::query()->create([
+            'name' => 'Wilker Raja Ampat',
+            'status' => WorkUnit::STATUS_ACTIVE,
+            'unit' => WorkUnit::UNIT_WORK_AREA,
+        ]);
+
+        $report->workUnits()->attach($workUnit);
+
+        $this->assertTrue($report->fresh()->workUnits->contains($workUnit));
+        $this->assertTrue($workUnit->fresh()->reports->contains($report));
+    }
+
+    public function test_report_belongs_to_one_involvement(): void
+    {
+        $involvement = Involvement::query()->create([
+            'name' => 'Sponsor',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => false,
+        ]);
+        $report = Report::query()->findOrFail($this->createReport($involvement->id));
+
+        $this->assertTrue($report->involvement->is($involvement));
+        $this->assertTrue($involvement->reports->contains($report));
+    }
+
+    public function test_master_options_use_stable_codes_and_indonesian_labels(): void
+    {
+        $this->assertSame([
+            WorkUnit::UNIT_SERVICE_UNIT => 'Satuan Pelayanan',
+            WorkUnit::UNIT_WORK_AREA => 'Wilayah Kerja',
+            WorkUnit::UNIT_SERVICE_OUTLET => 'Gerai Pelayanan',
+        ], WorkUnit::unitOptions());
+        $this->assertSame([
+            WorkUnit::STATUS_ACTIVE => 'Aktif',
+            WorkUnit::STATUS_INACTIVE => 'Tidak Aktif',
+        ], WorkUnit::statusOptions());
+        $this->assertSame(WorkUnit::statusOptions(), Involvement::statusOptions());
+    }
+
+    public function test_involvement_seeder_is_idempotent(): void
+    {
+        $this->seed(InvolvementSeeder::class);
+        $this->seed(InvolvementSeeder::class);
+
+        $this->assertDatabaseCount('involvements', 2);
+        $this->assertDatabaseHas('involvements', [
+            'name' => 'Penyelenggara',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => true,
+        ]);
+        $this->assertDatabaseHas('involvements', [
+            'name' => 'Peserta',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => false,
+        ]);
     }
 
     private function createReport(?int $involvementId = null): int
