@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Filament\Resources\WorkUnitResource;
 use App\Notifications\Auth\ResetPassword as SynchronousResetPassword;
 use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use Filament\Auth\Notifications\ResetPassword;
@@ -41,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
 
         FilamentShield::buildPermissionKeyUsing(
             fn (string $entity, ?string $affix, string $subject, string $case, string $separator): string => match (true) {
+                $entity === WorkUnitResource::class => Str::of($affix)
+                    ->snake()
+                    ->append('_work_unit')
+                    ->toString(),
                 is_subclass_of($entity, Resource::class) => Str::of($affix)
                     ->snake()
                     ->append('_')

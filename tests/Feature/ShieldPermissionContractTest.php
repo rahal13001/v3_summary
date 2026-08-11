@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Involvement;
 use App\Models\User;
+use App\Models\WorkUnit;
+use App\Policies\InvolvementPolicy;
 use App\Policies\RolePolicy;
+use App\Policies\WorkUnitPolicy;
 use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use Filament\Facades\Filament;
 use Spatie\Permission\Models\Role;
@@ -17,7 +21,7 @@ class ShieldPermissionContractTest extends TestCase
 
         $permissions = FilamentShield::getEntitiesPermissions();
 
-        $this->assertCount(71, $permissions);
+        $this->assertCount(95, $permissions);
         $this->assertSame([
             'view_any_role',
             'view_role',
@@ -31,6 +35,16 @@ class ShieldPermissionContractTest extends TestCase
         )));
         $this->assertContains('view_any_user', $permissions);
         $this->assertContains('view_report', $permissions);
+        $this->assertContains('view_any_work_unit', $permissions);
+        $this->assertContains('view_work_unit', $permissions);
+        $this->assertContains('create_work_unit', $permissions);
+        $this->assertContains('update_work_unit', $permissions);
+        $this->assertContains('delete_work_unit', $permissions);
+        $this->assertContains('view_any_involvement', $permissions);
+        $this->assertContains('view_involvement', $permissions);
+        $this->assertContains('create_involvement', $permissions);
+        $this->assertContains('update_involvement', $permissions);
+        $this->assertContains('delete_involvement', $permissions);
         $this->assertNotContains('page_Dashboard', $permissions);
         $this->assertSame([], array_values(array_filter(
             $permissions,
@@ -65,6 +79,47 @@ class ShieldPermissionContractTest extends TestCase
             $user->allowedPermission = $permission;
 
             $this->assertTrue($check(), "RolePolicy did not check [{$permission}].");
+        }
+    }
+
+    public function test_organization_dimension_policies_use_the_generated_permissions(): void
+    {
+        $user = new class extends User
+        {
+            public string $allowedPermission = '';
+
+            public function can($abilities, $arguments = []): bool
+            {
+                return $abilities === $this->allowedPermission;
+            }
+        };
+
+        $resources = [
+            'work_unit' => [new WorkUnitPolicy, new WorkUnit],
+            'involvement' => [new InvolvementPolicy, new Involvement],
+        ];
+
+        foreach ($resources as $subject => [$policy, $model]) {
+            $checks = [
+                "view_any_{$subject}" => fn (): bool => $policy->viewAny($user),
+                "view_{$subject}" => fn (): bool => $policy->view($user, $model),
+                "create_{$subject}" => fn (): bool => $policy->create($user),
+                "update_{$subject}" => fn (): bool => $policy->update($user, $model),
+                "delete_{$subject}" => fn (): bool => $policy->delete($user, $model),
+                "delete_any_{$subject}" => fn (): bool => $policy->deleteAny($user),
+                "force_delete_{$subject}" => fn (): bool => $policy->forceDelete($user, $model),
+                "force_delete_any_{$subject}" => fn (): bool => $policy->forceDeleteAny($user),
+                "restore_{$subject}" => fn (): bool => $policy->restore($user, $model),
+                "restore_any_{$subject}" => fn (): bool => $policy->restoreAny($user),
+                "replicate_{$subject}" => fn (): bool => $policy->replicate($user, $model),
+                "reorder_{$subject}" => fn (): bool => $policy->reorder($user),
+            ];
+
+            foreach ($checks as $permission => $check) {
+                $user->allowedPermission = $permission;
+
+                $this->assertTrue($check(), "Policy did not check [{$permission}].");
+            }
         }
     }
 }
