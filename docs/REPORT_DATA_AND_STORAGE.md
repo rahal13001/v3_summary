@@ -21,6 +21,22 @@ These results do not justify clearing database paths automatically. A path can s
 5. PDF output skips missing documentation images and optional document QR codes.
 6. Existing reports without signatures remain editable; signatures are required for newly created reports.
 7. Existing many-to-many report fields use the relationship state paths `followers`, `indicators`, and `teams`.
+8. `workUnits` is a separate many-to-many relationship and must not replace or reuse `teams`.
+9. Historical reports may have `involvement_id = null` and no `report_work_unit` rows. Viewing them must remain safe; editing requires the new fields.
+10. A report with an involvement flagged `is_lprl_organizer` always persists `LPRL Sorong` as `penyelenggara`, including when a client tampers with the read-only field.
+11. PDF and Excel eager-load `workUnits` and `involvement` so the new output does not introduce per-row relationship queries.
+
+## Deployment of organization dimensions
+
+Run these commands during deployment after the application code is available:
+
+```text
+php artisan migrate --isolated
+php artisan db:seed --class=InvolvementSeeder
+php artisan shield:generate --all --panel=admin
+```
+
+The migration is additive. It leaves historical reports with `involvement_id = null` and does not create guessed Unit Kerja links. Seed only creates the initial `Penyelenggara` and `Peserta` values when missing. Do not use `migrate:fresh`, `migrate:refresh`, or `db:wipe` on an existing environment.
 
 ## File restoration
 
@@ -65,7 +81,7 @@ Run the focused resilience tests with SQLite:
 ```text
 DB_CONNECTION=sqlite
 DB_DATABASE=:memory:
-php artisan test tests/Feature/ReportResourceFormTest.php tests/Feature/ReportImportedDataResilienceTest.php
+php artisan test tests/Feature/ReportResourceFormTest.php tests/Feature/ReportOrganizationDimensionsTest.php tests/Feature/ReportOrganizationOutputsTest.php tests/Feature/ReportImportedDataResilienceTest.php
 ```
 
 The current code intentionally makes no database content changes. Missing files, missing documentation rows, orphan pivots, and unmapped users should only be edited after their source data has been verified.

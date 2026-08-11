@@ -2,15 +2,15 @@
 
 ## 1. Status Dokumen
 
-- Jenis: dokumentasi produk **as-is** (baseline sebelum modernisasi)
-- Tanggal observasi: 7 Agustus 2026
+- Jenis: dokumentasi produk **as-is**
+- Tanggal pembaruan: 11 Agustus 2026
 - Sumber kebenaran: source code aplikasi, migration, model Eloquent, resource Filament, route, controller, command terjadwal, dan dependency manifest
 - Cakupan: aplikasi inti; source vendor, cache, log, dan hasil build tidak dianalisis sebagai logika bisnis
 - Catatan: dokumen ini tidak menetapkan perubahan atau desain versi berikutnya
 
 ## 2. Ringkasan Produk
 
-Summary adalah aplikasi internal berbasis Laravel dan Filament untuk mencatat, mengelola, menyajikan, dan menganalisis laporan kegiatan dengan format 5W1H. Laporan dapat dikaitkan dengan penyusun, pengikut, indikator kinerja (IKU), tim kerja, dokumentasi, surat tugas, dan tanda tangan.
+Summary adalah aplikasi internal berbasis Laravel dan Filament untuk mencatat, mengelola, menyajikan, dan menganalisis laporan kegiatan dengan format 5W1H. Laporan dapat dikaitkan dengan penyusun, pengikut, indikator kinerja (IKU), tim kerja, unit kerja LPRL Sorong, jenis keterlibatan, dokumentasi, surat tugas, dan tanda tangan.
 
 Aplikasi juga memiliki modul disposisi/order untuk menugaskan pekerjaan kepada satu atau lebih pelaksana. Pelaksana dapat mencatat status, bukti, deskripsi, tugas, dan menghubungkan hasilnya ke laporan Summary. Pengingat diberikan melalui email dan Firebase Cloud Messaging (FCM).
 
@@ -18,7 +18,7 @@ Aplikasi juga memiliki modul disposisi/order untuk menugaskan pekerjaan kepada s
 
 1. Menstandarkan pencatatan kegiatan dalam struktur 5W1H.
 2. Menyimpan bukti kegiatan dan dokumen pendukung dalam satu rekaman.
-3. Mengaitkan laporan dengan IKU dan tim kerja untuk analisis organisasi.
+3. Mengaitkan laporan dengan IKU, tim kerja, unit kerja, dan keterlibatan LPRL Sorong untuk analisis organisasi.
 4. Menunjukkan kontribusi penyusun dan pengikut laporan.
 5. Menyediakan keluaran PDF, QR, verifikasi tanda tangan, dan Excel.
 6. Mengelola disposisi tugas dan memantau penyelesaiannya.
@@ -64,6 +64,8 @@ Setiap laporan menyimpan:
 - tanda tangan dalam kolom `kode`;
 - slug unik untuk URL publik;
 - relasi ke IKU dan tim kerja;
+- relasi ke minimal satu unit kerja yang melaksanakan kegiatan;
+- satu jenis keterlibatan LPRL Sorong;
 - dokumentasi kegiatan, surat tugas, dan dokumen lain.
 
 Perilaku utama:
@@ -71,9 +73,12 @@ Perilaku utama:
 - Penyusun default adalah user yang sedang login dan hanya user berstatus aktif yang ditawarkan.
 - Pengikut dapat dipilih lebih dari satu.
 - IKU dan tim kerja dapat dipilih lebih dari satu; form memprioritaskan referensi aktif.
+- Unit kerja dapat dipilih lebih dari satu dan berbeda secara semantik dari tim kerja; laporan baru atau laporan lama yang diedit wajib mempunyai minimal satu unit kerja.
+- Keterlibatan dipilih satu. Bila jenisnya ditandai sebagai LPRL penyelenggara, nilai Penyelenggara dipaksa menjadi `LPRL Sorong`; jenis lain mewajibkan input manual.
+- Laporan historis boleh belum mempunyai unit kerja dan keterlibatan sampai record diedit; sistem tidak menebak nilai lama.
 - Isi `how` memakai rich-text editor.
 - Laporan menggunakan soft delete serta menyediakan restore/force delete sesuai izin.
-- Daftar dapat dicari, diurutkan, dipaginasi, dan difilter berdasarkan rentang tanggal, IKU, tim, penyusun, serta status trash.
+- Daftar dapat dicari, diurutkan, dipaginasi, dan difilter berdasarkan rentang tanggal, IKU, tim, unit kerja, keterlibatan, penyusun, serta status trash.
 - Record terpilih dapat diekspor ke Excel.
 - Gaze dipakai untuk menampilkan/mengendalikan kehadiran pengguna pada form.
 
@@ -99,7 +104,16 @@ Perilaku utama:
 - Tim aktif menjadi pilihan pada form laporan.
 - Dashboard menghitung jumlah laporan per tim aktif dalam rentang tanggal.
 
-### 5.6 Dashboard analitik
+### 5.6 Referensi unit kerja dan keterlibatan
+
+- Unit Kerja mencatat kantor di bawah naungan LPRL Sorong yang mengerjakan kegiatan, bukan tim kerja internal.
+- Setiap Unit Kerja mempunyai nama, status aktif/nonaktif, dan kategori tetap: Satuan Pelayanan, Wilayah Kerja, atau Gerai Pelayanan.
+- Report dan Unit Kerja berelasi many-to-many melalui `report_work_unit`.
+- Keterlibatan adalah master fleksibel untuk posisi LPRL Sorong pada kegiatan, misalnya Penyelenggara, Peserta, Sponsor, atau Pemberi Modal.
+- Penanda `is_lprl_organizer` menentukan apakah Penyelenggara diisi otomatis `LPRL Sorong`.
+- Master yang sudah digunakan tidak dihapus; admin menonaktifkannya agar histori tetap utuh.
+
+### 5.7 Dashboard analitik
 
 Dashboard mendukung filter tanggal mulai dan tanggal selesai, lalu menampilkan:
 
@@ -113,19 +127,20 @@ Dashboard mendukung filter tanggal mulai dan tanggal selesai, lalu menampilkan:
 
 Tanggal analisis menggunakan kolom kegiatan `reports.when`, bukan tanggal pembuatan record.
 
-### 5.7 PDF, QR, tanda tangan, dan tampilan publik
+### 5.8 PDF, QR, tanda tangan, dan tampilan publik
 
 - Route `/pdf/{report}` menghasilkan PDF streaming berdasarkan slug laporan.
 - PDF menyertakan QR menuju laporan, surat tugas, dan dokumentasi lain.
+- PDF menampilkan Unit Kerja, Keterlibatan, dan Penyelenggara.
 - Route `/cek-ttd/{report}` menampilkan halaman verifikasi tanda tangan.
 - Route public storage melayani file dari disk public melalui controller khusus.
 - Halaman khusus tersedia untuk melihat surat tugas dan dokumentasi lainnya.
 
-### 5.8 Ekspor Excel
+### 5.9 Ekspor Excel
 
-Ekspor laporan terpilih memuat penyusun, pengikut, nomor ST, 5W1H, IKU, tim, penyelenggara, peserta, dan persentase wanita. Isi rich text `how` diubah menjadi teks biasa, tanggal diformat `dd-mm-YYYY`, dan lembar menggunakan font Arial serta wrap text.
+Ekspor laporan terpilih memuat penyusun, pengikut, nomor ST, 5W1H, IKU, tim, Unit Kerja, Keterlibatan, Penyelenggara, peserta, dan persentase wanita. Isi rich text `how` diubah menjadi teks biasa, tanggal diformat `dd-mm-YYYY`, dan lembar menggunakan font Arial serta wrap text.
 
-### 5.9 Disposisi/order
+### 5.10 Disposisi/order
 
 Order menyimpan pemberi tugas, tanggal/waktu, tanggal selesai, status, instruksi, catatan, surat, dan slug.
 
@@ -136,7 +151,7 @@ Order menyimpan pemberi tugas, tanggal/waktu, tanggal selesai, status, instruksi
 - Perubahan daftar user mengganti kumpulan executor yang ada.
 - Widget menampilkan ringkasan jumlah order/pelaksana selesai sesuai implementasi resource.
 
-### 5.10 Notifikasi dan pekerjaan terjadwal
+### 5.11 Notifikasi dan pekerjaan terjadwal
 
 | Jadwal | Command | Perilaku |
 |---|---|---|
@@ -144,9 +159,9 @@ Order menyimpan pemberi tugas, tanggal/waktu, tanggal selesai, status, instruksi
 | Setiap hari 08:00 | `app:send-email-reminder` | Mengirim email kepada executor untuk order pada hari tersebut |
 | Setiap hari 02:00 | `app:delete-unused-files` | Menghapus file public yang tidak direferensikan |
 
-### 5.11 Administrasi dan keamanan
+### 5.12 Administrasi dan keamanan
 
-- User, role, permission, IKU, tim, laporan, dan order dikelola melalui resource Filament.
+- User, role, permission, IKU, tim, Unit Kerja, Keterlibatan, laporan, dan order dikelola melalui resource Filament.
 - Policy untuk resource utama menggunakan permission Filament Shield.
 - Panel mengaktifkan database notifications, database transactions, unsaved-change alerts, session authentication, CSRF, dan route model binding.
 
@@ -195,6 +210,8 @@ Baseline awal menggunakan Laravel 12 dan Filament 3. Modernisasi framework telah
 - Slug laporan unik; slug IKU, tim, dan order dipakai untuk route model binding tetapi tidak seluruhnya diberi unique constraint pada migration.
 - Hapus user akan menghapus laporan dan order miliknya melalui foreign key cascade.
 - Hapus laporan akan menghapus dokumentasi dan record pivot IKU/tim/pengikut.
+- Hapus laporan akan menghapus pivot Unit Kerja; Unit Kerja dan Keterlibatan yang masih dipakai dilindungi oleh foreign key restrict.
+- `reports.involvement_id` nullable untuk kompatibilitas laporan historis, sedangkan form create/edit mewajibkannya.
 - `executors.report_id` bersifat nullable dan model mendefinisikan relasi ke laporan, tetapi migration tidak menambahkan foreign-key constraint.
 - Pivot laporan–IKU, laporan–tim, dan laporan–pengikut tidak mempunyai primary key, timestamp, atau unique composite constraint.
 - User dan report memakai soft delete; domain lain umumnya hard delete.
@@ -210,7 +227,7 @@ Baseline awal menggunakan Laravel 12 dan Filament 3. Modernisasi framework telah
 - Scheduler dan worker/infrastruktur terkait harus aktif agar email, FCM, dan pembersihan file berjalan.
 - Relasi model dan migration harus dipertahankan kompatibel selama modernisasi.
 
-## 10. Batasan dan Temuan Baseline
+## 10. Batasan dan Temuan Historis
 
 Temuan berikut bukan instruksi perubahan; ini adalah hal yang perlu dipertimbangkan pada fase update berikutnya:
 
@@ -225,18 +242,17 @@ Temuan berikut bukan instruksi perubahan; ini adalah hal yang perlu dipertimbang
 9. Pembersihan file merupakan operasi destruktif terjadwal dan daftar referensinya perlu diuji ketat saat skema file diperluas.
 10. Beberapa endpoint file/dokumen bersifat publik; model otorisasi dan kebutuhan publiknya perlu dikonfirmasi pada PRD versi target.
 
-## 11. Di Luar Cakupan Baseline Ini
+## 11. Di Luar Cakupan Dokumen Ini
 
 - Target versi Laravel/Filament berikutnya.
-- Tabel atau dimensi analisis baru.
+- Agregasi dashboard baru untuk Unit Kerja atau Keterlibatan di luar filter laporan.
 - Perubahan UX, permission, API, atau alur bisnis.
 - Strategi migrasi data, deployment, rollback, dan pengujian upgrade.
 - Penilaian kualitas/kelengkapan isi database produksi.
 
-## 12. Kriteria Penerimaan Dokumentasi Baseline
+## 12. Kriteria Penerimaan Dokumentasi
 
 - Modul bisnis utama, aktor, alur, dan integrasi teridentifikasi.
 - Entitas serta relasi data dapat ditelusuri ke migration/model.
 - Perbedaan antara fakta implementasi dan kandidat perbaikan dinyatakan jelas.
 - Dokumen dapat menjadi input untuk diskusi update tanpa mengubah sistem berjalan.
-

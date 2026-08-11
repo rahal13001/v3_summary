@@ -15,7 +15,7 @@ Pengguna utama adalah admin pengelola referensi dan writer penginput laporan. Fi
 - Satu Report mempunyai banyak Unit Kerja dan satu Unit Kerja dapat terhubung ke banyak Report.
 - Satu Report mempunyai nol atau satu Keterlibatan pada data historis dan tepat satu Keterlibatan setelah laporan dibuat atau diedit melalui form.
 - Laporan baru wajib memilih minimal satu Unit Kerja dan satu Keterlibatan.
-- Laporan lama boleh mempunyai `keterlibatan_id = null` dan tidak mempunyai Unit Kerja sampai diedit.
+- Laporan lama boleh mempunyai `involvement_id = null` dan tidak mempunyai Unit Kerja sampai diedit.
 - Unit Kerja mempunyai `name`, `status`, dan satu `unit` dari pilihan tetap Satuan Pelayanan, Wilayah Kerja, atau Gerai Pelayanan.
 - Keterlibatan mempunyai `name`, `status`, dan penanda boolean `is_lprl_organizer` agar jenis baru tidak bergantung pada pencocokan nama.
 - Jika Keterlibatan bertanda `is_lprl_organizer`, form mengisi `penyelenggara` dengan `LPRL Sorong` dan mencegah perubahan manual.
@@ -91,7 +91,7 @@ Seeder menyediakan nilai awal:
 ## Commands
 
 ```text
-Focused tests: php artisan test tests/Feature/ReportOrganizationDimensionsTest.php tests/Feature/ReportResourceFormTest.php
+Focused tests: php artisan test tests/Feature/ReportOrganizationDimensionsTest.php tests/Feature/ReportResourceFormTest.php tests/Feature/ReportOrganizationOutputsTest.php
 Full tests:    php artisan test
 PHP format:    vendor/bin/pint --dirty
 Autoload:      composer dump-autoload --strict-psr
@@ -185,4 +185,4 @@ public function workUnits()
 
 ## Open Questions
 
-Tidak ada pertanyaan bisnis yang menghalangi implementasi. Asumsi teknis di awal dokumen memerlukan persetujuan sebelum coding.
+Tidak ada pertanyaan bisnis yang menghalangi implementasi. Spesifikasi telah disetujui sebelum coding.
