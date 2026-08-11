@@ -39,89 +39,89 @@ Semua irisan
 
 ### Phase 1: Data Foundation
 
-- [ ] Task 1: Tambahkan regression test skema lalu migration aditif.
+- [x] Task 1: Tambahkan regression test skema lalu migration aditif.
   - Acceptance: tabel `work_units`, `involvements`, `report_work_unit`, dan nullable `reports.involvement_id` tersedia; pivot unik; foreign key delete rules sesuai spesifikasi.
   - Verify: `php artisan test tests/Feature/ReportOrganizationDimensionsTest.php --filter=schema`.
   - Files: satu migration baru, satu test feature.
 
-- [ ] Task 2: Tambahkan model, relasi, konstanta opsi, dan seeder awal.
+- [x] Task 2: Tambahkan model, relasi, konstanta opsi, dan seeder awal.
   - Acceptance: Eloquent Report–Unit Kerja dan Report–Keterlibatan bekerja; seeder idempotent menyediakan Penyelenggara dan Peserta.
   - Verify: `php artisan test tests/Feature/ReportOrganizationDimensionsTest.php --filter='relationship|seed'`.
   - Files: `WorkUnit.php`, `Involvement.php`, `Report.php`, `InvolvementSeeder.php`, test feature.
 
 ### Checkpoint: Data Foundation
 
-- [ ] Focused schema/model tests lulus.
-- [ ] Migration rollback tervalidasi pada SQLite in-memory.
-- [ ] Tidak ada data Report lama yang diisi atau ditebak.
+- [x] Focused schema/model tests lulus.
+- [x] Migration rollback tervalidasi pada SQLite in-memory.
+- [x] Tidak ada data Report lama yang diisi atau ditebak.
 
 ### Phase 2: Admin Master Data
 
-- [ ] Task 3: Bangun resource Unit Kerja.
+- [x] Task 3: Bangun resource Unit Kerja.
   - Acceptance: admin dapat list/create/edit Unit Kerja; tiga kategori tetap; status aktif/nonaktif; pencarian dan filter tersedia; record terpakai tidak dapat dihapus.
   - Verify: focused resource contract test dan panel smoke test.
   - Files: `WorkUnitResource.php`, tiga page resource, test feature.
 
-- [ ] Task 4: Bangun resource Keterlibatan.
+- [x] Task 4: Bangun resource Keterlibatan.
   - Acceptance: admin dapat list/create/edit Keterlibatan; toggle LPRL organizer tersedia; status dan pencarian/filter tersedia; record terpakai tidak dapat dihapus.
   - Verify: focused resource contract test dan panel smoke test.
   - Files: `InvolvementResource.php`, tiga page resource, test feature.
 
-- [ ] Task 5: Tambahkan authorization Shield.
+- [x] Task 5: Tambahkan authorization Shield.
   - Acceptance: dua policy baru memakai permission standar; katalog Shield bertambah tepat 24 permission tanpa mengubah format permission lama.
   - Verify: `php artisan test tests/Feature/ShieldPermissionContractTest.php`.
   - Files: dua policy, Shield contract test.
 
 ### Checkpoint: Admin Master Data
 
-- [ ] Resource terdeteksi panel dan dilindungi policy.
-- [ ] Test resource dan permission lulus.
-- [ ] Master aktif/nonaktif bekerja tanpa hard-coded name behavior.
+- [x] Resource terdeteksi panel dan dilindungi policy.
+- [x] Test resource dan permission lulus.
+- [x] Master aktif/nonaktif bekerja tanpa hard-coded name behavior.
 
 ### Phase 3: Report Workflow
 
-- [ ] Task 6: Integrasikan Unit Kerja dan Keterlibatan pada ReportResource.
+- [x] Task 6: Integrasikan Unit Kerja dan Keterlibatan pada ReportResource.
   - Acceptance: create/edit wajib satu Keterlibatan dan minimal satu Unit Kerja; pilihan hanya master aktif; perubahan Keterlibatan mengisi atau membersihkan Penyelenggara sesuai flag; detail dan filter menampilkan dimensi baru.
   - Verify: focused form behavior dan resource contract tests.
   - Files: `ReportResource.php`, `ReportResourceFormTest.php`, organization-dimensions test.
 
-- [ ] Task 7: Jaga kompatibilitas laporan historis.
+- [x] Task 7: Jaga kompatibilitas laporan historis.
   - Acceptance: laporan tanpa Keterlibatan/Unit Kerja tetap dapat dilihat; edit meminta pengisian; nilai master nonaktif yang sudah terhubung tetap tampil.
   - Verify: focused historical compatibility tests.
   - Files: `ReportResource.php`, organization-dimensions test.
 
 ### Checkpoint: Report Workflow
 
-- [ ] Focused Report tests lulus.
-- [ ] Tim Kerja dan state path `teams` tetap berfungsi.
-- [ ] Transisi Penyelenggara internal/eksternal teruji dua arah.
+- [x] Focused Report tests lulus.
+- [x] Tim Kerja dan state path `teams` tetap berfungsi.
+- [x] Transisi Penyelenggara internal/eksternal teruji dua arah.
 
 ### Phase 4: Output and Documentation
 
-- [ ] Task 8: Tambahkan dimensi baru ke Excel.
+- [x] Task 8: Tambahkan dimensi baru ke Excel.
   - Acceptance: export eager-load relasi baru dan memuat kolom Unit Kerja serta Keterlibatan tanpa query per baris.
   - Verify: focused export mapping/query test.
   - Files: `ReportsExport.php`, export test.
 
-- [ ] Task 9: Tambahkan dimensi baru ke PDF.
+- [x] Task 9: Tambahkan dimensi baru ke PDF.
   - Acceptance: PDF menampilkan Unit Kerja, Keterlibatan, dan Penyelenggara; laporan historis null dirender aman.
   - Verify: focused PDF render/layout test.
   - Files: `PdfController.php`, `pdf.blade.php`, PDF test.
 
-- [ ] Task 10: Perbarui dokumentasi sistem.
+- [x] Task 10: Perbarui dokumentasi sistem.
   - Acceptance: PRD, ERD, dan data/storage docs mencerminkan tabel, relasi, validasi, dan kompatibilitas historis baru.
   - Verify: review diff dokumentasi terhadap migration/model final.
   - Files: tiga dokumen `docs/`.
 
 ### Checkpoint: Complete
 
-- [ ] `php artisan test` lulus pada SQLite in-memory.
-- [ ] `vendor/bin/pint --dirty` lulus.
-- [ ] `composer dump-autoload --strict-psr` lulus.
-- [ ] `npm run build` lulus.
-- [ ] `git diff --check` bersih.
-- [ ] Review correctness, security, maintainability, performance, compatibility, dan accessibility selesai.
-- [ ] Tidak ada migration atau seed dijalankan terhadap database aplikasi.
+- [x] `php artisan test` lulus pada SQLite in-memory.
+- [x] `vendor/bin/pint --dirty` lulus.
+- [x] `composer dump-autoload --strict-psr` lulus.
+- [x] `npm run build` lulus.
+- [x] `git diff --check` bersih.
+- [x] Review correctness, security, maintainability, performance, compatibility, dan accessibility selesai.
+- [x] Tidak ada migration atau seed dijalankan terhadap database aplikasi.
 
 ## Risks and Mitigations
 

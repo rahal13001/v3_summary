@@ -57,7 +57,7 @@ class ReportsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
     public function map($report): array
     {
         /** @var Report $report */
-        return [
+        return array_map($this->spreadsheetText(...), [
             $report->user?->name,
             $report->followers->pluck('name')->join(', '),
             $report->no_st,
@@ -75,7 +75,7 @@ class ReportsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
             $report->penyelenggara,
             $report->total_peserta,
             "{$report->total_wanita}%",
-        ];
+        ]);
     }
 
     public function styles(Worksheet $sheet): array
@@ -117,5 +117,16 @@ class ReportsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
         }
 
         return trim(html_entity_decode(strip_tags($value)));
+    }
+
+    private function spreadsheetText(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return preg_match('/^[\p{Z}\s]*[=+\-@]/u', $value) === 1
+            ? "'{$value}"
+            : $value;
     }
 }

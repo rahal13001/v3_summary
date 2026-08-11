@@ -33,7 +33,7 @@ Run these commands during deployment after the application code is available:
 ```text
 php artisan migrate --isolated
 php artisan db:seed --class=InvolvementSeeder
-php artisan shield:generate --all --panel=admin
+php artisan shield:generate --all --option=permissions --panel=admin --no-interaction
 ```
 
 The migration is additive. It leaves historical reports with `involvement_id = null` and does not create guessed Unit Kerja links. Seed only creates the initial `Penyelenggara` and `Peserta` values when missing. Do not use `migrate:fresh`, `migrate:refresh`, or `db:wipe` on an existing environment.

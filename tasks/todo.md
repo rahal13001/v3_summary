@@ -1,23 +1,23 @@
 # Unit Kerja dan Keterlibatan Laporan
 
-- [ ] Tulis failing test untuk skema baru.
-- [ ] Tambahkan migration aditif dan buktikan rollback.
-- [ ] Tulis failing test untuk relasi dan seed.
-- [ ] Tambahkan model WorkUnit, Involvement, relasi Report, dan seeder awal.
-- [ ] Verifikasi checkpoint fondasi data.
-- [ ] Tulis resource contract test Unit Kerja.
-- [ ] Tambahkan WorkUnitResource dan pages.
-- [ ] Tulis resource contract test Keterlibatan.
-- [ ] Tambahkan InvolvementResource dan pages.
-- [ ] Tambahkan policy baru dan update kontrak Shield.
-- [ ] Verifikasi checkpoint master admin.
-- [ ] Tulis failing test form Report dan transisi Penyelenggara.
-- [ ] Integrasikan field, detail, dan filter pada ReportResource.
-- [ ] Tambahkan test kompatibilitas Report historis.
-- [ ] Verifikasi Tim Kerja tetap berfungsi.
-- [ ] Tulis test dan update Excel export.
-- [ ] Tulis test dan update PDF.
-- [ ] Perbarui PRD, ERD, dan data/storage docs.
-- [ ] Jalankan focused tests tiap irisan.
-- [ ] Jalankan full PHPUnit, Pint, strict PSR-4, frontend build, dan diff check.
-- [ ] Lakukan review multi-axis dan perbaiki temuan dalam scope.
+- [x] Tulis failing test untuk skema baru.
+- [x] Tambahkan migration aditif dan buktikan rollback.
+- [x] Tulis failing test untuk relasi dan seed.
+- [x] Tambahkan model WorkUnit, Involvement, relasi Report, dan seeder awal.
+- [x] Verifikasi checkpoint fondasi data.
+- [x] Tulis resource contract test Unit Kerja.
+- [x] Tambahkan WorkUnitResource dan pages.
+- [x] Tulis resource contract test Keterlibatan.
+- [x] Tambahkan InvolvementResource dan pages.
+- [x] Tambahkan policy baru dan update kontrak Shield.
+- [x] Verifikasi checkpoint master admin.
+- [x] Tulis failing test form Report dan transisi Penyelenggara.
+- [x] Integrasikan field, detail, dan filter pada ReportResource.
+- [x] Tambahkan test kompatibilitas Report historis.
+- [x] Verifikasi Tim Kerja tetap berfungsi.
+- [x] Tulis test dan update Excel export.
+- [x] Tulis test dan update PDF.
+- [x] Perbarui PRD, ERD, dan data/storage docs.
+- [x] Jalankan focused tests tiap irisan.
+- [x] Jalankan full PHPUnit, Pint, strict PSR-4, frontend build, dan diff check.
+- [x] Lakukan review multi-axis dan perbaiki temuan dalam scope.

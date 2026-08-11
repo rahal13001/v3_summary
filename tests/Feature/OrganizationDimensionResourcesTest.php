@@ -17,6 +17,8 @@ class OrganizationDimensionResourcesTest extends TestCase
 
         $this->assertSame(WorkUnit::class, WorkUnitResource::getModel());
         $this->assertStringContainsString("TextInput::make('name')", $source);
+        $this->assertStringContainsString('->unique(', $source);
+        $this->assertStringContainsString("->where('unit', \$get('unit'))", $source);
         $this->assertStringContainsString("Select::make('status')", $source);
         $this->assertStringContainsString('->options(WorkUnit::statusOptions())', $source);
         $this->assertStringContainsString("Select::make('unit')", $source);

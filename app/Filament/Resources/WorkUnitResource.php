@@ -11,10 +11,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Unique;
 
 class WorkUnitResource extends Resource
 {
@@ -40,6 +42,11 @@ class WorkUnitResource extends Resource
                         TextInput::make('name')
                             ->label('Nama Unit Kerja')
                             ->required()
+                            ->unique(
+                                ignoreRecord: true,
+                                modifyRuleUsing: fn (Unique $rule, Get $get): Unique => $rule
+                                    ->where('unit', $get('unit')),
+                            )
                             ->maxLength(255)
                             ->columnSpanFull(),
                         Select::make('unit')
