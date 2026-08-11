@@ -1,11 +1,23 @@
-# Summary Production Readiness Audit
+# Unit Kerja dan Keterlibatan Laporan
 
-- [ ] Establish safety baseline and preserve dirty worktree.
-- [ ] Query Graphify and inventory current architecture.
-- [ ] Run seven evidence-backed audit domains.
-- [ ] Triage findings into P0/P1/P2.
-- [ ] Reproduce and safely fix eligible P0/P1 defects.
-- [ ] Add regression tests and validate with SQLite/in-memory.
-- [ ] Re-audit fixes and run release checks.
-- [ ] Write `AUDIT_REPORT.md` and `PRODUCTION_READINESS.md`.
-- [ ] Deliver readiness verdict and remaining risks.
+- [ ] Tulis failing test untuk skema baru.
+- [ ] Tambahkan migration aditif dan buktikan rollback.
+- [ ] Tulis failing test untuk relasi dan seed.
+- [ ] Tambahkan model WorkUnit, Involvement, relasi Report, dan seeder awal.
+- [ ] Verifikasi checkpoint fondasi data.
+- [ ] Tulis resource contract test Unit Kerja.
+- [ ] Tambahkan WorkUnitResource dan pages.
+- [ ] Tulis resource contract test Keterlibatan.
+- [ ] Tambahkan InvolvementResource dan pages.
+- [ ] Tambahkan policy baru dan update kontrak Shield.
+- [ ] Verifikasi checkpoint master admin.
+- [ ] Tulis failing test form Report dan transisi Penyelenggara.
+- [ ] Integrasikan field, detail, dan filter pada ReportResource.
+- [ ] Tambahkan test kompatibilitas Report historis.
+- [ ] Verifikasi Tim Kerja tetap berfungsi.
+- [ ] Tulis test dan update Excel export.
+- [ ] Tulis test dan update PDF.
+- [ ] Perbarui PRD, ERD, dan data/storage docs.
+- [ ] Jalankan focused tests tiap irisan.
+- [ ] Jalankan full PHPUnit, Pint, strict PSR-4, frontend build, dan diff check.
+- [ ] Lakukan review multi-axis dan perbaiki temuan dalam scope.

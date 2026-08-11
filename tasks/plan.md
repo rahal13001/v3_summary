@@ -1,76 +1,140 @@
-# Implementation Plan: Summary Production Readiness Audit
+# Implementation Plan: Unit Kerja dan Keterlibatan Laporan
 
 ## Overview
 
-Audit the Laravel/Filament application across architecture, functionality, database integrity, security, UI/UX, performance/reliability, and tests. The primary MySQL database remains read-only; automated database tests run only on isolated SQLite. Existing user changes are preserved. Only reproducible, clearly safe P0/P1 defects may be fixed, with regression tests and re-audit.
+Implementasi mengikuti spesifikasi `docs/specs/UNIT_KERJA_KETERLIBATAN.md`. Pekerjaan dibagi menjadi irisan vertikal kecil: fondasi data, master admin, integrasi Report, keluaran, lalu dokumentasi dan verifikasi. Semua perubahan skema bersifat aditif. Semua test database memakai SQLite in-memory.
 
 ## Architecture Decisions
 
-- Use the existing Graphify graph first as the architectural map, while treating it as potentially stale relative to the dirty worktree and confirming findings against source.
-- Treat MySQL as read-only. No `migrate:fresh`, `migrate:refresh`, `db:wipe`, `truncate`, destructive test traits, schema mutations, or data writes.
-- Run audit domains in parallel agents; require source lines, test output, safe query output, or runtime evidence for every material claim.
-- Separate verified bugs from potential risks and optional improvements. Production status is based on unresolved P0/P1 findings.
-- Apply fixes only after reproduction. Use small increments, regression tests, lint/test/build checks, and an independent re-audit.
+- `work_units` menjadi master kantor terpisah dari `teams`.
+- `report_work_unit` menyimpan relasi many-to-many dengan unique composite untuk mencegah duplikasi.
+- `involvements` menjadi master fleksibel; `is_lprl_organizer` mengendalikan perilaku Penyelenggara tanpa pencocokan nama.
+- `reports.involvement_id` nullable menjaga kompatibilitas 2.438+ laporan historis.
+- Validasi wajib diterapkan pada form create/edit, bukan constraint `NOT NULL`, karena data lama boleh kosong.
+- Master terpakai dilindungi dari penghapusan; status nonaktif menjadi mekanisme penghentian pemakaian.
+- Resource baru mengikuti 12 permission standar Filament Shield per resource.
+- Opsi status dan kategori dipusatkan pada model untuk mencegah perbedaan antara form, filter, dan tampilan.
+
+## Dependency Graph
+
+```text
+Migration aditif
+    ├── Model dan relasi
+    │   ├── Resource admin Unit Kerja
+    │   ├── Resource admin Keterlibatan
+    │   └── Integrasi ReportResource
+    │       ├── Detail dan filter Report
+    │       ├── Excel
+    │       └── PDF
+    └── Seeder Keterlibatan awal
+
+Resource admin
+    └── Policy dan katalog permission Shield
+
+Semua irisan
+    └── Dokumentasi dan full verification
+```
 
 ## Task List
 
-### Phase 1: Context and safety baseline
+### Phase 1: Data Foundation
 
-- [ ] Record dirty worktree and protect existing changes.
-- [ ] Read project brief, previous implementation notes, and required skills.
-- [ ] Query the existing Graphify graph and compare high-risk paths to current source.
-- [ ] Inventory test tooling, database configuration, routes, models, policies, resources, views, storage, and deployment config.
+- [ ] Task 1: Tambahkan regression test skema lalu migration aditif.
+  - Acceptance: tabel `work_units`, `involvements`, `report_work_unit`, dan nullable `reports.involvement_id` tersedia; pivot unik; foreign key delete rules sesuai spesifikasi.
+  - Verify: `php artisan test tests/Feature/ReportOrganizationDimensionsTest.php --filter=schema`.
+  - Files: satu migration baru, satu test feature.
 
-### Checkpoint: Audit safety
+- [ ] Task 2: Tambahkan model, relasi, konstanta opsi, dan seeder awal.
+  - Acceptance: Eloquent Report–Unit Kerja dan Report–Keterlibatan bekerja; seeder idempotent menyediakan Penyelenggara dan Peserta.
+  - Verify: `php artisan test tests/Feature/ReportOrganizationDimensionsTest.php --filter='relationship|seed'`.
+  - Files: `WorkUnit.php`, `Involvement.php`, `Report.php`, `InvolvementSeeder.php`, test feature.
 
-- [ ] Confirm no destructive database command is planned or executed.
-- [ ] Confirm all database-capable tests are forced to SQLite/in-memory.
+### Checkpoint: Data Foundation
 
-### Phase 2: Parallel evidence collection
+- [ ] Focused schema/model tests lulus.
+- [ ] Migration rollback tervalidasi pada SQLite in-memory.
+- [ ] Tidak ada data Report lama yang diisi atau ditebak.
 
-- [ ] Agent 1: architecture and graph audit.
-- [ ] Agent 2: functional flows and bug hunting.
-- [ ] Agent 3: database/schema/data-integrity audit using read-only checks only.
-- [ ] Agent 4: security threat model and authorization/input/storage audit.
-- [ ] Agent 5: UI/UX, responsive, accessibility, dark/light, and browser audit.
-- [ ] Agent 6: performance and reliability audit.
-- [ ] Agent 7: tests, coverage gaps, and multi-axis code review.
+### Phase 2: Admin Master Data
 
-### Checkpoint: Findings triage
+- [ ] Task 3: Bangun resource Unit Kerja.
+  - Acceptance: admin dapat list/create/edit Unit Kerja; tiga kategori tetap; status aktif/nonaktif; pencarian dan filter tersedia; record terpakai tidak dapat dihapus.
+  - Verify: focused resource contract test dan panel smoke test.
+  - Files: `WorkUnitResource.php`, tiga page resource, test feature.
 
-- [ ] Consolidate evidence into Critical/High/Medium/Low and P0/P1/P2.
-- [ ] Reproduce every proposed P0/P1 fix before editing code.
-- [ ] Identify conflicts with existing user modifications before applying patches.
+- [ ] Task 4: Bangun resource Keterlibatan.
+  - Acceptance: admin dapat list/create/edit Keterlibatan; toggle LPRL organizer tersedia; status dan pencarian/filter tersedia; record terpakai tidak dapat dihapus.
+  - Verify: focused resource contract test dan panel smoke test.
+  - Files: `InvolvementResource.php`, tiga page resource, test feature.
 
-### Phase 3: Safe remediation
+- [ ] Task 5: Tambahkan authorization Shield.
+  - Acceptance: dua policy baru memakai permission standar; katalog Shield bertambah tepat 24 permission tanpa mengubah format permission lama.
+  - Verify: `php artisan test tests/Feature/ShieldPermissionContractTest.php`.
+  - Files: dua policy, Shield contract test.
 
-- [ ] Add a failing regression test for each selected P0/P1 bug.
-- [ ] Apply the smallest safe implementation change.
-- [ ] Run focused tests after each increment using SQLite/in-memory.
-- [ ] Review fixes for correctness, security, maintainability, performance, accessibility, and compatibility.
+### Checkpoint: Admin Master Data
 
-### Checkpoint: Re-audit
+- [ ] Resource terdeteksi panel dan dilindungi policy.
+- [ ] Test resource dan permission lulus.
+- [ ] Master aktif/nonaktif bekerja tanpa hard-coded name behavior.
 
-- [ ] Independently re-check each remediated finding.
-- [ ] Run the safe full test suite, lint/format checks, asset build, and cache/config checks.
-- [ ] Confirm the main database was neither reset nor modified.
+### Phase 3: Report Workflow
 
-### Phase 4: Release documentation
+- [ ] Task 6: Integrasikan Unit Kerja dan Keterlibatan pada ReportResource.
+  - Acceptance: create/edit wajib satu Keterlibatan dan minimal satu Unit Kerja; pilihan hanya master aktif; perubahan Keterlibatan mengisi atau membersihkan Penyelenggara sesuai flag; detail dan filter menampilkan dimensi baru.
+  - Verify: focused form behavior dan resource contract tests.
+  - Files: `ReportResource.php`, `ReportResourceFormTest.php`, organization-dimensions test.
 
-- [ ] Create `AUDIT_REPORT.md` with risk matrix, evidence, status, tests, and limitations.
-- [ ] Create `PRODUCTION_READINESS.md` with readiness verdict, deployment checklist, safe commands, environment checks, monitoring, rollback plan, and residual risk.
-- [ ] Provide absolute links to changed files and line-level evidence.
+- [ ] Task 7: Jaga kompatibilitas laporan historis.
+  - Acceptance: laporan tanpa Keterlibatan/Unit Kerja tetap dapat dilihat; edit meminta pengisian; nilai master nonaktif yang sudah terhubung tetap tampil.
+  - Verify: focused historical compatibility tests.
+  - Files: `ReportResource.php`, organization-dimensions test.
+
+### Checkpoint: Report Workflow
+
+- [ ] Focused Report tests lulus.
+- [ ] Tim Kerja dan state path `teams` tetap berfungsi.
+- [ ] Transisi Penyelenggara internal/eksternal teruji dua arah.
+
+### Phase 4: Output and Documentation
+
+- [ ] Task 8: Tambahkan dimensi baru ke Excel.
+  - Acceptance: export eager-load relasi baru dan memuat kolom Unit Kerja serta Keterlibatan tanpa query per baris.
+  - Verify: focused export mapping/query test.
+  - Files: `ReportsExport.php`, export test.
+
+- [ ] Task 9: Tambahkan dimensi baru ke PDF.
+  - Acceptance: PDF menampilkan Unit Kerja, Keterlibatan, dan Penyelenggara; laporan historis null dirender aman.
+  - Verify: focused PDF render/layout test.
+  - Files: `PdfController.php`, `pdf.blade.php`, PDF test.
+
+- [ ] Task 10: Perbarui dokumentasi sistem.
+  - Acceptance: PRD, ERD, dan data/storage docs mencerminkan tabel, relasi, validasi, dan kompatibilitas historis baru.
+  - Verify: review diff dokumentasi terhadap migration/model final.
+  - Files: tiga dokumen `docs/`.
+
+### Checkpoint: Complete
+
+- [ ] `php artisan test` lulus pada SQLite in-memory.
+- [ ] `vendor/bin/pint --dirty` lulus.
+- [ ] `composer dump-autoload --strict-psr` lulus.
+- [ ] `npm run build` lulus.
+- [ ] `git diff --check` bersih.
+- [ ] Review correctness, security, maintainability, performance, compatibility, dan accessibility selesai.
+- [ ] Tidak ada migration atau seed dijalankan terhadap database aplikasi.
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Tests accidentally target MySQL | Critical data loss | Force SQLite environment for every test command and inspect test configuration/traits first. |
-| Dirty worktree overlaps fixes | User work overwritten | Inspect diffs before patching, make surgical edits, never reset/checkout/delete unrelated changes. |
-| Existing Graphify graph is stale | Missed or false relationships | Use it as a map, then verify each important path against current source and git diff. |
-| Browser runtime unavailable | Visual defects unverified | Report static-only findings honestly and mark runtime checks as limitations. |
-| Large production dataset differs from tests | Runtime/performance failures | Use read-only schema/data diagnostics where safe and document untested scale assumptions. |
+| Test mengenai database aplikasi | Critical | PHPUnit memaksa SQLite `:memory:` dan bootstrap menolak koneksi lain. |
+| Field disabled tidak tersimpan oleh Filament | High | Gunakan state yang tetap didehidrasi atau read-only; buktikan dengan component/form test. |
+| Master nonaktif hilang dari edit laporan lama | Medium | Query opsi mempertahankan nilai yang sudah dipilih sambil mencegah pilihan baru. |
+| Delete master menghilangkan histori | High | FK restrict dan action delete dinonaktifkan saat relation count lebih dari nol. |
+| Resource baru mengubah katalog permission | Medium | Update kontrak dari 71 menjadi 95 dan verifikasi tepat 12 permission per resource. |
+| Relasi baru menambah N+1 pada export/PDF | Medium | Eager-load `workUnits` dan `involvement`; tambah regression test query/mapping. |
+| PDF layout melebar karena daftar Unit Kerja | Low | Tampilkan sebagai teks gabungan dengan wrapping yang sudah ada. |
 
 ## Open Questions
 
-- None blocking. The brief authorizes the audit and only safe, reproducible P0/P1 remediation; any schema/data mutation or materially ambiguous fix requires explicit approval.
+Tidak ada. Spesifikasi dan asumsi teknis telah disetujui pengguna.
