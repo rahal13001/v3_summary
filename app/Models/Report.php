@@ -32,6 +32,21 @@ class Report extends Model
         'kode',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Report $report): void {
+            if (! $report->involvement_id) {
+                return;
+            }
+
+            $involvement = Involvement::query()->find($report->involvement_id);
+
+            if ($involvement?->is_lprl_organizer) {
+                $report->penyelenggara = $involvement->organizerName();
+            }
+        });
+    }
+
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()

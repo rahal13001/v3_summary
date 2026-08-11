@@ -30,8 +30,8 @@ class ReportResourceFormTest extends TestCase
         $source = file_get_contents((new ReflectionClass(ReportResource::class))->getFileName());
 
         $this->assertFalse($editor->hasFileAttachments(default: true));
-        $this->assertStringContainsString("->fileAttachments(false)", $source);
-        $this->assertStringContainsString("->toolbarButtons([", $source);
+        $this->assertStringContainsString('->fileAttachments(false)', $source);
+        $this->assertStringContainsString('->toolbarButtons([', $source);
         $this->assertStringNotContainsString("'attachFiles'", $source);
     }
 
@@ -72,6 +72,33 @@ class ReportResourceFormTest extends TestCase
         ] as $section) {
             $this->assertStringContainsString("Section::make('{$section}')", $source);
         }
+    }
+
+    public function test_report_form_collects_required_organization_dimensions(): void
+    {
+        $source = file_get_contents((new ReflectionClass(ReportResource::class))->getFileName());
+
+        $this->assertStringContainsString("Select::make('workUnits')", $source);
+        $this->assertStringContainsString("->relationship('workUnits', 'name'", $source);
+        $this->assertMatchesRegularExpression("/Select::make\('workUnits'\).*?->multiple\(\).*?->minItems\(1\).*?->required\(\)/s", $source);
+        $this->assertStringContainsString("Select::make('involvement_id')", $source);
+        $this->assertStringContainsString("->relationship('involvement', 'name'", $source);
+        $this->assertMatchesRegularExpression("/Select::make\('involvement_id'\).*?->live\(\).*?->afterStateUpdated\(/s", $source);
+        $this->assertStringContainsString('->afterStateHydrated(', $source);
+        $this->assertStringContainsString("\$set('penyelenggara', \$involvement?->organizerName())", $source);
+        $this->assertMatchesRegularExpression("/TextInput::make\('penyelenggara'\).*?->readOnly\(.*?is_lprl_organizer.*?\).*?->required\(\)/s", $source);
+    }
+
+    public function test_report_detail_and_filters_expose_organization_dimensions(): void
+    {
+        $source = file_get_contents((new ReflectionClass(ReportResource::class))->getFileName());
+
+        $this->assertStringContainsString("TextEntry::make('workUnits.name')", $source);
+        $this->assertStringContainsString("TextEntry::make('involvement.name')", $source);
+        $this->assertStringContainsString("SelectFilter::make('workUnits')", $source);
+        $this->assertStringContainsString("->relationship('workUnits', 'name')", $source);
+        $this->assertStringContainsString("SelectFilter::make('involvement')", $source);
+        $this->assertStringContainsString("->relationship('involvement', 'name')", $source);
     }
 
     public function test_report_sections_use_the_full_form_width_while_compact_fields_remain_grouped(): void

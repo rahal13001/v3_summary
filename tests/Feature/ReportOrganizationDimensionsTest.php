@@ -163,11 +163,45 @@ class ReportOrganizationDimensionsTest extends TestCase
         ]);
     }
 
+    public function test_lprl_organizer_involvement_forces_the_official_organizer_name(): void
+    {
+        $involvement = Involvement::query()->create([
+            'name' => 'Penyelenggara',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => true,
+        ]);
+
+        $report = Report::query()->create($this->reportAttributes([
+            'involvement_id' => $involvement->id,
+            'penyelenggara' => 'Nilai yang dimanipulasi',
+        ]));
+
+        $this->assertSame('LPRL Sorong', $report->penyelenggara);
+        $this->assertSame('LPRL Sorong', $involvement->organizerName());
+    }
+
+    public function test_external_involvement_has_no_automatic_organizer_name(): void
+    {
+        $involvement = Involvement::query()->create([
+            'name' => 'Peserta',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => false,
+        ]);
+
+        $this->assertNull($involvement->organizerName());
+    }
+
     private function createReport(?int $involvementId = null): int
     {
-        return DB::table('reports')->insertGetId([
-            'user_id' => User::factory()->create()->id,
+        return DB::table('reports')->insertGetId($this->reportAttributes([
             'involvement_id' => $involvementId,
+        ]));
+    }
+
+    private function reportAttributes(array $overrides = []): array
+    {
+        return array_merge([
+            'user_id' => User::factory()->create()->id,
             'slug' => fake()->unique()->slug(),
             'no_st' => 'ST-001',
             'what' => 'Kegiatan uji',
@@ -183,6 +217,6 @@ class ReportOrganizationDimensionsTest extends TestCase
             'kode' => 'signature',
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ], $overrides);
     }
 }

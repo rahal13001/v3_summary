@@ -35,6 +35,11 @@ class Involvement extends Model
         ];
     }
 
+    public function organizerName(): ?string
+    {
+        return $this->is_lprl_organizer ? 'LPRL Sorong' : null;
+    }
+
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class);

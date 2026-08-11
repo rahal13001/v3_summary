@@ -2,70 +2,73 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Fieldset;
+use App\Exports\ReportsExport;
+use App\Filament\Forms\Components\SignaturePad;
+use App\Filament\Resources\ReportResource\Pages\CreateReport;
+use App\Filament\Resources\ReportResource\Pages\EditReport;
+use App\Filament\Resources\ReportResource\Pages\ListReports;
+use App\Filament\Resources\ReportResource\Pages\ViewReport;
+use App\Models\Indicator;
+use App\Models\Involvement;
+use App\Models\Report;
+use App\Models\Team;
+use App\Models\User;
+use App\Models\WorkUnit;
+use DiscoveryDesign\FilamentGaze\Forms\Components\GazeBanner;
 use Filament\Actions\ActionGroup;
-use Filament\Actions\ViewAction;
-use Filament\Actions\DeleteAction;
-use Filament\Support\Enums\Size;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Actions\BulkAction;
-use Illuminate\Database\Eloquent\Collection;
-use Filament\Support\Enums\IconSize;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Group;
-use App\Filament\Resources\ReportResource\Pages\ListReports;
-use App\Filament\Resources\ReportResource\Pages\CreateReport;
-use App\Filament\Resources\ReportResource\Pages\ViewReport;
-use App\Filament\Resources\ReportResource\Pages\EditReport;
-use Filament\Forms;
-use App\Models\Team;
-use App\Models\User;
-use Filament\Tables;
-use App\Models\Report;
-use App\Exports\ReportsExport;
-use App\Models\Indicator;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use App\Infolists\Components\How;
-use Filament\Tables\Filters\Filter;
-use Illuminate\Contracts\View\View;
-use Filament\Forms\Components\Radio;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Filament\Forms\Components\Select;
-use Filament\Support\Enums\FontWeight;
-use Filament\Forms\Components\Textarea;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Enums\FiltersLayout;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Tables\Filters\SelectFilter;
-use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Infolists\Components\IconEntry;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\ImageEntry;
-use App\Filament\Resources\ReportResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Forms\Components\SignaturePad;
-use App\Filament\Resources\ReportResource\RelationManagers;
-use DiscoveryDesign\FilamentGaze\Forms\Components\GazeBanner;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\Size;
+use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
-    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document';
+
     protected static ?int $navigationSort = 1;
+
     protected static ?string $slug = 'laporan-5w1h';
 
-    protected static string | \UnitEnum | null $navigationGroup = 'Executive Summary';
+    protected static string|\UnitEnum|null $navigationGroup = 'Executive Summary';
 
     // protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -163,6 +166,30 @@ class ReportResource extends Resource
                             ->searchPrompt('Cari Tim Kerja')
                             ->multiple()
                             ->columnSpanFull(),
+                        Select::make('workUnits')
+                            ->relationship(
+                                name: 'workUnits',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: function (Builder $query, ?Report $record): Builder {
+                                    $selectedIds = $record?->workUnits()->pluck('work_units.id')->all() ?? [];
+
+                                    return $query->where(function (Builder $query) use ($selectedIds): void {
+                                        $query->where('status', WorkUnit::STATUS_ACTIVE);
+
+                                        if ($selectedIds !== []) {
+                                            $query->orWhereIn('work_units.id', $selectedIds);
+                                        }
+                                    });
+                                },
+                            )
+                            ->label('Unit Kerja')
+                            ->preload()
+                            ->searchable()
+                            ->searchPrompt('Cari Unit Kerja')
+                            ->multiple()
+                            ->minItems(1)
+                            ->required()
+                            ->columnSpanFull(),
                     ]),
                 Section::make('Pelaksanaan dan Peserta')
                     ->description('Lengkapi pelaksana, penyelenggara, peserta, dan uraian pelaksanaan.')
@@ -176,7 +203,48 @@ class ReportResource extends Resource
                             ->required()
                             ->label('Who')
                             ->columnSpanFull(),
+                        Select::make('involvement_id')
+                            ->relationship(
+                                name: 'involvement',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: function (Builder $query, ?Report $record): Builder {
+                                    return $query->where(function (Builder $query) use ($record): void {
+                                        $query->where('status', Involvement::STATUS_ACTIVE);
+
+                                        if ($record?->involvement_id) {
+                                            $query->orWhereKey($record->involvement_id);
+                                        }
+                                    });
+                                },
+                            )
+                            ->label('Keterlibatan')
+                            ->preload()
+                            ->searchable()
+                            ->live()
+                            ->afterStateHydrated(function (Set $set, $state): void {
+                                $involvement = filled($state)
+                                    ? Involvement::query()->find($state)
+                                    : null;
+
+                                if ($involvement?->organizerName()) {
+                                    $set('penyelenggara', $involvement->organizerName());
+                                }
+                            })
+                            ->afterStateUpdated(function (Set $set, $state): void {
+                                $involvement = filled($state)
+                                    ? Involvement::query()->find($state)
+                                    : null;
+
+                                $set('penyelenggara', $involvement?->organizerName());
+                            })
+                            ->required(),
                         TextInput::make('penyelenggara')
+                            ->readOnly(function (Get $get): bool {
+                                $involvementId = $get('involvement_id');
+
+                                return filled($involvementId)
+                                    && (bool) Involvement::query()->find($involvementId)?->is_lprl_organizer;
+                            })
                             ->required()
                             ->label('Penyelenggara')
                             ->maxLength(255),
@@ -299,7 +367,7 @@ class ReportResource extends Resource
                             ->required(fn (string $operation): bool => $operation === 'create')
                             ->columnSpanFull(),
                     ]),
-                ])
+            ])
             ->columns(1);
     }
 
@@ -309,69 +377,69 @@ class ReportResource extends Resource
             ->columns([
                 TextColumn::make('No')
                     ->rowIndex(),
-                    TextColumn::make('user.name')
-                        ->label('Penyusun')
-                        ->searchable()
-                        ->sortable(),
-                    TextColumn::make('what')
-                        ->searchable()
-                        ->sortable()
-                        ->limit(80)
-                        ->label('What'),
-                    TextColumn::make('when')
-                        ->date()
-                        ->sortable(),
-                    TextColumn::make('no_st')
-                        ->searchable()
-                        ->sortable()
-                        ->toggleable(isToggledHiddenByDefault: true),
-                    TextColumn::make('tanggal_selesai')
-                        ->date()
-                        ->sortable()
-                        ->toggleable(isToggledHiddenByDefault: true),
-                    TextColumn::make('penyelenggara')
-                        ->searchable()
-                        ->toggleable(isToggledHiddenByDefault: true),
-                    TextColumn::make('total_peserta')
-                        ->searchable()
-                        ->toggleable(isToggledHiddenByDefault: true),
-                    TextColumn::make('total_wanita')
-                        ->searchable()
-                        ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('user.name')
+                    ->label('Penyusun')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('what')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(80)
+                    ->label('What'),
+                TextColumn::make('when')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('no_st')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('tanggal_selesai')
+                    ->date()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('penyelenggara')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('total_peserta')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('total_wanita')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->paginated([10, 25, 50, 75])
             ->defaultSort('when', 'desc')
             ->filters([
                 Filter::make('when')
-                ->schema([
-                    DatePicker::make('created_from')
-                        ->label('Tanggal Mulai'),
-                    DatePicker::make('created_until')
-                        ->label('Tanggal Selesai'),
-                ])
-                ->query(function (Builder $query, array $data): Builder {
-                    return $query
-                        ->when(
-                            $data['created_from'],
-                            function($query) use ($data) {
-                                return $query->whereDate('when', '>=', $data['created_from']);
-                            }
-                        )
-                        ->when(
-                            $data['created_until'],
-                            function($query) use ($data) {
-                                return $query->whereDate('when', '<=', $data['created_until']);
-                            }
-                        );
-                })->indicator('when'),
-                
+                    ->schema([
+                        DatePicker::make('created_from')
+                            ->label('Tanggal Mulai'),
+                        DatePicker::make('created_until')
+                            ->label('Tanggal Selesai'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                function ($query) use ($data) {
+                                    return $query->whereDate('when', '>=', $data['created_from']);
+                                }
+                            )
+                            ->when(
+                                $data['created_until'],
+                                function ($query) use ($data) {
+                                    return $query->whereDate('when', '<=', $data['created_until']);
+                                }
+                            );
+                    })->indicator('when'),
+
                 SelectFilter::make('indicators')
                     ->label('IKU')
                     ->multiple()
                     ->searchable()
                     ->options(function () {
                         return Indicator::select('id', 'nama_iku', 'tahun_iku')
-                            ->orderByDesc('tahun_iku')    
+                            ->orderByDesc('tahun_iku')
                             ->get()
                             ->mapWithKeys(function ($item) {
                                 return [$item->id => "{$item->nama_iku} ({$item->tahun_iku})"];
@@ -379,8 +447,10 @@ class ReportResource extends Resource
                             ->toArray();
                     })
                     ->query(function ($query, array $data) {
-                        if (empty($data['value'])) return;
-                    
+                        if (empty($data['value'])) {
+                            return;
+                        }
+
                         $query->whereHas('indicators', function ($q) use ($data) {
                             $q->whereIn('indicators.id', (array) $data['value']);
                         });
@@ -395,6 +465,20 @@ class ReportResource extends Resource
                     ->multiple()
                     ->indicator('Tim Kerja')
                     ->searchable(),
+                SelectFilter::make('workUnits')
+                    ->relationship('workUnits', 'name')
+                    ->label('Unit Kerja')
+                    ->preload()
+                    ->multiple()
+                    ->indicator('Unit Kerja')
+                    ->searchable(),
+                SelectFilter::make('involvement')
+                    ->relationship('involvement', 'name')
+                    ->label('Keterlibatan')
+                    ->preload()
+                    ->multiple()
+                    ->indicator('Keterlibatan')
+                    ->searchable(),
                 SelectFilter::make('user_id')
                     ->relationship('user', 'name')
                     ->label('Penyusun')
@@ -403,10 +487,10 @@ class ReportResource extends Resource
                     ->indicator('Penyusun')
                     ->multiple()
                     ->searchable(),
-                
+
                 TrashedFilter::make(),
 
-            ],layout: FiltersLayout::Modal )
+            ], layout: FiltersLayout::Modal)
             ->filtersFormColumns(3)
 
             ->recordActions([
@@ -436,12 +520,11 @@ class ReportResource extends Resource
                         ->deselectRecordsAfterCompletion()
                         ->action(fn (Collection $records) => Excel::download(
                             new ReportsExport($records),
-                            'laporan-5w1h-' . now()->format('Ymd-His') . '.xlsx',
+                            'laporan-5w1h-'.now()->format('Ymd-His').'.xlsx',
                         )),
                 ]),
             ]);
     }
-
 
     public static function infolist(Schema $schema): Schema
     {
@@ -509,7 +592,6 @@ class ReportResource extends Resource
                 ->color('info')
                 ->url($url, '_blank');
         }
-
 
         $components = [
             Section::make('Informasi Penyusun')
@@ -586,6 +668,12 @@ class ReportResource extends Resource
                         ->label('Tim kerja')
                         ->placeholder('Belum ditentukan')
                         ->extraAttributes(['class' => 'report-infolist-value']),
+                    TextEntry::make('workUnits.name')
+                        ->listWithLineBreaks()
+                        ->bulleted()
+                        ->label('Unit Kerja')
+                        ->placeholder('Belum ditentukan')
+                        ->extraAttributes(['class' => 'report-infolist-value']),
                 ])
                 ->collapsible()
                 ->columnSpanFull(),
@@ -599,6 +687,10 @@ class ReportResource extends Resource
                     'md' => 2,
                 ])
                 ->schema([
+                    TextEntry::make('involvement.name')
+                        ->label('Keterlibatan')
+                        ->placeholder('Belum ditentukan')
+                        ->extraAttributes(['class' => 'report-infolist-value']),
                     TextEntry::make('penyelenggara')
                         ->label('Penyelenggara')
                         ->columnSpanFull()
@@ -724,13 +816,9 @@ class ReportResource extends Resource
     {
         $locale = app()->getLocale();
         if ($locale === 'id') {
-            return "Laporan 5W1H";
-        }
-        else
-        {
-            return "Report";
+            return 'Laporan 5W1H';
+        } else {
+            return 'Report';
         }
     }
-
-
 }
