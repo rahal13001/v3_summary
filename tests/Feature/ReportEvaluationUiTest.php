@@ -19,6 +19,8 @@ class ReportEvaluationUiTest extends TestCase
 
     public function test_relation_manager_is_registered_but_hidden_when_monev_is_disabled(): void
     {
+        config()->set('organization.monev_enabled', false);
+
         $owner = User::factory()->create();
         $report = Report::factory()->for($owner)->create();
         $this->actingAs($owner);

@@ -16,12 +16,24 @@ class OrganizationContext
             return null;
         }
 
-        return Cache::rememberForever(
+        $attributes = Cache::get(self::CACHE_KEY);
+
+        if ($attributes !== null && ! is_array($attributes)) {
+            Cache::forget(self::CACHE_KEY);
+            $attributes = null;
+        }
+
+        $attributes ??= Cache::rememberForever(
             self::CACHE_KEY,
-            fn (): ?OrganizationSetting => OrganizationSetting::query()
+            fn (): ?array => OrganizationSetting::query()
                 ->where('key', OrganizationSetting::DEFAULT_KEY)
-                ->first(),
+                ->first()
+                ?->getAttributes(),
         );
+
+        return is_array($attributes)
+            ? (new OrganizationSetting)->newFromBuilder($attributes)
+            : null;
     }
 
     public function name(): string

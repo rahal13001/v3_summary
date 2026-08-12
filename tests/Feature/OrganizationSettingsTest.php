@@ -32,6 +32,8 @@ class OrganizationSettingsTest extends TestCase
 
     public function test_empty_setting_uses_safe_sorong_compatible_defaults(): void
     {
+        config()->set('organization.monev_enabled', false);
+
         $organization = app(OrganizationContext::class);
 
         $this->assertSame('LPRL Sorong', $organization->name());
@@ -54,6 +56,26 @@ class OrganizationSettingsTest extends TestCase
 
         $this->assertSame('LPSPL Kupang', $organization->shortName());
         $this->assertTrue($organization->monevEnabled());
+    }
+
+    public function test_organization_context_recovers_from_a_legacy_serialized_model_cache(): void
+    {
+        OrganizationSetting::query()->create([
+            'name' => 'Loka Pengelolaan Sumberdaya Pesisir dan Laut Kupang',
+            'short_name' => 'LPSPL Kupang',
+            'monev_enabled' => true,
+        ]);
+
+        Cache::forever(
+            OrganizationContext::CACHE_KEY,
+            unserialize('O:25:"LegacyOrganizationSetting":0:{}'),
+        );
+
+        $organization = app(OrganizationContext::class);
+
+        $this->assertSame('LPSPL Kupang', $organization->shortName());
+        $this->assertTrue($organization->monevEnabled());
+        $this->assertIsArray(Cache::get(OrganizationContext::CACHE_KEY));
     }
 
     public function test_only_one_default_organization_setting_can_exist(): void
