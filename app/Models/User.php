@@ -2,27 +2,26 @@
 
 namespace App\Models;
 
+use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
-use Filament\Models\Contracts\HasAvatar;
-use Illuminate\Notifications\Notifiable;
-use Filament\Models\Contracts\FilamentUser;
-use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements HasAvatar, FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
+    use HasApiTokens;
     use HasFactory, Notifiable;
-    use SoftDeletes;
     use HasPanelShield;
     use HasRoles;
-    use HasApiTokens;
-
-
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -36,9 +35,28 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
         'avatar_url',
         'nip',
         'jabatan',
+        'coordinator_signature_path',
         'fcm_token',
         'status',
     ];
+
+    protected static function booted(): void
+    {
+        static::updated(function (User $user): void {
+            if (! $user->wasChanged('coordinator_signature_path')) {
+                return;
+            }
+
+            $oldPath = $user->getPrevious()['coordinator_signature_path'] ?? null;
+            $newPath = $user->coordinator_signature_path;
+
+            if (blank($oldPath) || $oldPath === $newPath) {
+                return;
+            }
+
+            DB::afterCommit(fn (): bool => Storage::disk('local')->delete($oldPath));
+        });
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {
@@ -70,6 +88,7 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
             'password' => 'hashed',
         ];
     }
+
     public function getFilamentAvatarUrl(): ?string
     {
         // return $this->avatar_url ? Storage::url($this->avatar_url) : null ;
@@ -79,5 +98,17 @@ class User extends Authenticatable implements HasAvatar, FilamentUser
     public function reports()
     {
         return $this->hasMany(Report::class);
+    }
+
+    public function coordinatorAssignments()
+    {
+        return $this->hasMany(WorkUnitCoordinator::class);
+    }
+
+    public function coordinatedWorkUnits()
+    {
+        return $this->belongsToMany(WorkUnit::class, 'work_unit_coordinators')
+            ->withPivot(['starts_at', 'ends_at'])
+            ->withTimestamps();
     }
 }

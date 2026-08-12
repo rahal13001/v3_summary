@@ -1,11 +1,11 @@
 <?php
- 
+
 namespace App\Filament\Pages\Auth;
 
-use Filament\Schemas\Schema;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
- 
+use Filament\Schemas\Schema;
+
 class EditProfile extends \Filament\Auth\Pages\EditProfile
 {
     public function form(Schema $schema): Schema
@@ -33,6 +33,15 @@ class EditProfile extends \Filament\Auth\Pages\EditProfile
                     ->label('Jabatan')
                     ->nullable()
                     ->maxLength(255),
+                FileUpload::make('coordinator_signature_path')
+                    ->label('Tanda tangan koordinator')
+                    ->helperText('PNG, JPEG, atau WebP maksimal 2 MB. Digunakan pada export Monev.')
+                    ->disk('local')
+                    ->directory('coordinator-signatures')
+                    ->visibility('private')
+                    ->image()
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(2048),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
             ]);

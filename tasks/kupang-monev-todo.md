@@ -8,9 +8,9 @@
 
 ## Phase 2 — Koordinator dan otorisasi
 
-- [ ] Task 3: Tambahkan tanda tangan pada profil koordinator.
-- [ ] Task 4: Tambahkan penugasan koordinator berperiode pada Unit Kerja.
-- [ ] Checkpoint B: uji satu koordinator aktif dan eager loading profil.
+- [x] Task 3: Tambahkan tanda tangan pada profil koordinator.
+- [x] Task 4: Tambahkan penugasan koordinator berperiode pada Unit Kerja.
+- [x] Checkpoint B: uji satu koordinator aktif dan eager loading profil.
 
 ## Phase 3 — Evaluasi dan audit
 

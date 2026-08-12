@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\WorkUnitResource\Pages\CreateWorkUnit;
 use App\Filament\Resources\WorkUnitResource\Pages\EditWorkUnit;
 use App\Filament\Resources\WorkUnitResource\Pages\ListWorkUnits;
+use App\Filament\Resources\WorkUnitResource\RelationManagers\CoordinatorAssignmentsRelationManager;
 use App\Models\WorkUnit;
 use App\Services\OrganizationContext;
 use Filament\Actions\EditAction;
@@ -105,6 +106,13 @@ class WorkUnitResource extends Resource
             'index' => ListWorkUnits::route('/'),
             'create' => CreateWorkUnit::route('/create'),
             'edit' => EditWorkUnit::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            CoordinatorAssignmentsRelationManager::class,
         ];
     }
 

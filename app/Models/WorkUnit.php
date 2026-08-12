@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class WorkUnit extends Model
 {
@@ -51,5 +54,38 @@ class WorkUnit extends Model
             'work_unit_id',
             'report_id',
         );
+    }
+
+    public function coordinatorAssignments(): HasMany
+    {
+        return $this->hasMany(WorkUnitCoordinator::class);
+    }
+
+    public function currentCoordinatorAssignment(): HasOne
+    {
+        $today = today()->toDateString();
+
+        return $this->hasOne(WorkUnitCoordinator::class)
+            ->whereDate('starts_at', '<=', $today)
+            ->where(fn ($query) => $query
+                ->whereNull('ends_at')
+                ->orWhereDate('ends_at', '>=', $today))
+            ->orderByDesc('starts_at')
+            ->orderByDesc('id');
+    }
+
+    public function coordinatorAt(mixed $date): ?User
+    {
+        $day = Carbon::parse($date)->toDateString();
+
+        return $this->coordinatorAssignments()
+            ->with('user')
+            ->whereDate('starts_at', '<=', $day)
+            ->where(fn ($query) => $query
+                ->whereNull('ends_at')
+                ->orWhereDate('ends_at', '>=', $day))
+            ->latest('starts_at')
+            ->first()
+            ?->user;
     }
 }
