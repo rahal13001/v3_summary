@@ -27,10 +27,10 @@
 
 ## Phase 5 — Export Monev
 
-- [ ] Task 10: Bangun query dataset berdasarkan unit, overlap periode, dan evaluasi lanjutan.
-- [ ] Task 11: Bangun renderer Excel yang mengikuti template Monev.
-- [ ] Task 12: Tambahkan action Export Monev dengan parameter dan validasi tanda tangan.
-- [ ] Checkpoint E: uji mapping, format, hyperlink, query count, render visual, dan export lama.
+- [x] Task 10: Bangun query dataset berdasarkan unit, overlap periode, dan evaluasi lanjutan.
+- [x] Task 11: Bangun renderer Excel yang mengikuti template Monev.
+- [x] Task 12: Tambahkan action Export Monev dengan parameter dan validasi tanda tangan.
+- [x] Checkpoint E: uji mapping, format, hyperlink, query count, render visual, dan export lama.
 
 ## Phase 6 — Handoff
 

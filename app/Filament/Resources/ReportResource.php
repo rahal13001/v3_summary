@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\MonevExport;
 use App\Exports\ReportsExport;
 use App\Filament\Forms\Components\SignaturePad;
 use App\Filament\Resources\ReportResource\Pages\CreateReport;
@@ -15,8 +16,10 @@ use App\Models\Report;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkUnit;
+use App\Policies\ReportEvaluationPolicy;
 use App\Services\OrganizationContext;
 use DiscoveryDesign\FilamentGaze\Forms\Components\GazeBanner;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -56,8 +59,10 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportResource extends Resource
@@ -507,6 +512,75 @@ class ReportResource extends Resource
                     ->color('primary')
                     ->button(),
             ])
+            ->headerActions([
+                Action::make('export_monev')
+                    ->label('Export Monev')
+                    ->icon('heroicon-m-arrow-down-tray')
+                    ->visible(function (): bool {
+                        $user = auth()->user();
+
+                        return app(OrganizationContext::class)->monevEnabled()
+                            && $user !== null
+                            && app(ReportEvaluationPolicy::class)->canExportAny($user);
+                    })
+                    ->schema([
+                        Select::make('work_unit_id')
+                            ->label('Unit Kerja')
+                            ->options(fn (): array => static::monevWorkUnitOptions())
+                            ->searchable()
+                            ->required(),
+                        Select::make('month')
+                            ->label('Bulan')
+                            ->options(collect(range(1, 12))->mapWithKeys(
+                                fn (int $month): array => [
+                                    $month => Carbon::create(2000, $month, 1)->locale('id')->translatedFormat('F'),
+                                ],
+                            )->all())
+                            ->default(now()->month)
+                            ->required(),
+                        Select::make('year')
+                            ->label('Tahun')
+                            ->options(collect(range(now()->year - 5, now()->year + 1))->mapWithKeys(
+                                fn (int $year): array => [$year => $year],
+                            )->all())
+                            ->default(now()->year)
+                            ->required(),
+                        TextInput::make('signing_location')
+                            ->label('Lokasi Penandatanganan')
+                            ->maxLength(255)
+                            ->required(),
+                        DatePicker::make('signing_date')
+                            ->label('Tanggal Penandatanganan')
+                            ->default(today())
+                            ->required(),
+                    ])
+                    ->modalHeading('Export Matriks Evaluasi Monev')
+                    ->modalSubmitActionLabel('Export')
+                    ->action(function (array $data) {
+                        $workUnit = WorkUnit::query()->findOrFail($data['work_unit_id']);
+                        $user = auth()->user();
+
+                        abort_unless(
+                            $user && app(ReportEvaluationPolicy::class)->export($user, $workUnit),
+                            403,
+                        );
+
+                        $coordinator = $workUnit->coordinatorAt(today());
+                        static::validateMonevCoordinator($coordinator);
+                        $period = Carbon::create((int) $data['year'], (int) $data['month'], 1);
+
+                        return Excel::download(
+                            new MonevExport(
+                                $workUnit,
+                                $period,
+                                trim($data['signing_location']),
+                                Carbon::parse($data['signing_date']),
+                                $coordinator,
+                            ),
+                            'matriks-monev-'.$workUnit->getKey().'-'.$period->format('Y-m').'.xlsx',
+                        );
+                    }),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
@@ -794,6 +868,55 @@ class ReportResource extends Resource
         return [
             EvaluationsRelationManager::class,
         ];
+    }
+
+    public static function monevWorkUnitOptions(): array
+    {
+        $user = auth()->user();
+
+        if ($user === null || ! $user->can(ReportEvaluationPolicy::EXPORT)) {
+            return [];
+        }
+
+        $query = WorkUnit::query()->where('status', WorkUnit::STATUS_ACTIVE)->orderBy('name');
+
+        if (! $user->hasRole(['admin', 'super_admin']) && ! $user->can(ReportEvaluationPolicy::MANAGE_ALL)) {
+            $query->whereHas('coordinatorAssignments', fn (Builder $query) => $query
+                ->where('user_id', $user->getKey())
+                ->whereDate('starts_at', '<=', today())
+                ->where(fn (Builder $query) => $query
+                    ->whereNull('ends_at')
+                    ->orWhereDate('ends_at', '>=', today())));
+        }
+
+        return $query->pluck('name', 'id')->all();
+    }
+
+    public static function validateMonevCoordinator(?User $coordinator): void
+    {
+        $errors = [];
+
+        foreach (['name' => 'nama', 'nip' => 'NIP', 'jabatan' => 'jabatan'] as $field => $label) {
+            if (blank($coordinator?->{$field})) {
+                $errors["coordinator.{$field}"] = "Profil koordinator belum memiliki {$label}.";
+            }
+        }
+
+        $signature = trim((string) $coordinator?->coordinator_signature_path);
+        $validSignature = $signature !== '' && Storage::disk('local')->exists($signature);
+
+        if ($validSignature) {
+            $mime = Storage::disk('local')->mimeType($signature);
+            $validSignature = in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true);
+        }
+
+        if (! $validSignature) {
+            $errors['coordinator.signature'] = 'Tanda tangan koordinator belum tersedia atau tidak valid.';
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     public static function getPages(): array

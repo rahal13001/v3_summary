@@ -67,6 +67,24 @@ class ReportEvaluationPolicy
         return $this->hasGlobalAccess($user) || $this->coordinates($user, $workUnit);
     }
 
+    public function canExportAny(User $user): bool
+    {
+        if (! $user->can(self::EXPORT)) {
+            return false;
+        }
+
+        if ($this->hasGlobalAccess($user)) {
+            return true;
+        }
+
+        return $user->coordinatorAssignments()
+            ->whereDate('starts_at', '<=', today())
+            ->where(fn ($query) => $query
+                ->whereNull('ends_at')
+                ->orWhereDate('ends_at', '>=', today()))
+            ->exists();
+    }
+
     private function canManage(User $user, Report $report, WorkUnit $workUnit): bool
     {
         if ($this->hasGlobalAccess($user)) {
