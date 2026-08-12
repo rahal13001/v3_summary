@@ -8,6 +8,8 @@ use App\Models\OrganizationSetting;
 use App\Models\User;
 use App\Models\WorkUnit;
 use App\Policies\ReportEvaluationPolicy;
+use Filament\Notifications\Notification;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -128,6 +130,26 @@ class MonevExportTest extends TestCase
             $this->assertArrayHasKey('coordinator.jabatan', $exception->errors());
             $this->assertArrayHasKey('coordinator.signature', $exception->errors());
         }
+    }
+
+    public function test_export_validation_failure_is_reported_as_visible_notification(): void
+    {
+        Storage::fake('local');
+
+        try {
+            ReportResource::ensureMonevCoordinatorIsExportable(null);
+            $this->fail('Export should halt when no active coordinator is available.');
+        } catch (Halt) {
+            // The action remains open so the user can correct the selected work unit.
+        }
+
+        Notification::assertNotified(
+            Notification::make()
+                ->title('Export Monev belum dapat dilakukan')
+                ->body('Unit kerja belum memiliki koordinator aktif. Atur koordinator terlebih dahulu sebelum melakukan export.')
+                ->danger()
+                ->persistent(),
+        );
     }
 
     private function png(): string

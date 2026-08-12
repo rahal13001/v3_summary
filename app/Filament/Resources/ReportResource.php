@@ -38,6 +38,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Group;
@@ -48,6 +49,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\Size;
+use Filament\Support\Exceptions\Halt;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
@@ -566,7 +568,7 @@ class ReportResource extends Resource
                         );
 
                         $coordinator = $workUnit->coordinatorAt(today());
-                        static::validateMonevCoordinator($coordinator);
+                        static::ensureMonevCoordinatorIsExportable($coordinator);
                         $period = Carbon::create((int) $data['year'], (int) $data['month'], 1);
 
                         return Excel::download(
@@ -894,6 +896,12 @@ class ReportResource extends Resource
 
     public static function validateMonevCoordinator(?User $coordinator): void
     {
+        if ($coordinator === null) {
+            throw ValidationException::withMessages([
+                'coordinator' => 'Unit kerja belum memiliki koordinator aktif. Atur koordinator terlebih dahulu sebelum melakukan export.',
+            ]);
+        }
+
         $errors = [];
 
         foreach (['name' => 'nama', 'nip' => 'NIP', 'jabatan' => 'jabatan'] as $field => $label) {
@@ -916,6 +924,22 @@ class ReportResource extends Resource
 
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
+        }
+    }
+
+    public static function ensureMonevCoordinatorIsExportable(?User $coordinator): void
+    {
+        try {
+            static::validateMonevCoordinator($coordinator);
+        } catch (ValidationException $exception) {
+            Notification::make()
+                ->title('Export Monev belum dapat dilakukan')
+                ->body(collect($exception->errors())->flatten()->implode(' '))
+                ->danger()
+                ->persistent()
+                ->send();
+
+            throw new Halt;
         }
     }
 
