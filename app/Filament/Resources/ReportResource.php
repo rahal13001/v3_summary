@@ -907,7 +907,7 @@ class ReportResource extends Resource
 
         if ($validSignature) {
             $mime = Storage::disk('local')->mimeType($signature);
-            $validSignature = in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true);
+            $validSignature = in_array($mime, ['image/jpeg', 'image/png'], true);
         }
 
         if (! $validSignature) {

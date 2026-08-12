@@ -80,6 +80,29 @@ class ReportEvaluationAuthorizationTest extends TestCase
         $this->assertFalse($policy->export(User::factory()->create(), $firstUnit));
     }
 
+    public function test_report_wide_access_excludes_coordinator_only_access(): void
+    {
+        $owner = User::factory()->create();
+        $follower = User::factory()->create();
+        $coordinator = User::factory()->create();
+        [$report] = $this->context();
+        $report->user_id = $owner->id;
+        $report->save();
+        $report->followers()->attach($follower);
+        $unit = WorkUnit::factory()->create();
+        $report->workUnits()->attach($unit);
+        $unit->coordinatorAssignments()->create([
+            'user_id' => $coordinator->id,
+            'starts_at' => today()->subDay(),
+        ]);
+        $policy = app(ReportEvaluationPolicy::class);
+
+        $this->assertTrue($policy->hasReportWideAccess($owner, $report));
+        $this->assertTrue($policy->hasReportWideAccess($follower, $report));
+        $this->assertFalse($policy->hasReportWideAccess($coordinator, $report));
+        $this->assertTrue($policy->canManageReport($coordinator, $report));
+    }
+
     /** @return array{Report, WorkUnit, WorkUnit, User} */
     private function context(): array
     {

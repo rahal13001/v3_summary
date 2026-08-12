@@ -18,6 +18,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class EvaluationsRelationManager extends RelationManager
@@ -34,6 +35,27 @@ class EvaluationsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query): Builder {
+                /** @var Report $report */
+                $report = $this->getOwnerRecord();
+                $user = auth()->user();
+                $policy = app(ReportEvaluationPolicy::class);
+
+                if ($user === null) {
+                    return $query->whereRaw('1 = 0');
+                }
+
+                if ($policy->hasReportWideAccess($user, $report)) {
+                    return $query;
+                }
+
+                return $query->whereHas('workUnit.coordinatorAssignments', fn (Builder $query) => $query
+                    ->where('user_id', $user->getKey())
+                    ->whereDate('starts_at', '<=', today())
+                    ->where(fn (Builder $query) => $query
+                        ->whereNull('ends_at')
+                        ->orWhereDate('ends_at', '>=', today())));
+            })
             ->columns([
                 TextColumn::make('workUnit.name')->label('Unit Kerja')->sortable(),
                 TextColumn::make('period')->label('Periode')->date('F Y')->sortable(),

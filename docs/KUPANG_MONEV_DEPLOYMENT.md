@@ -28,7 +28,7 @@ Nilai pada Pengaturan Organisasi mengoverride fallback `ORGANIZATION_*`. Pastika
 4. Jalankan `php artisan optimize:clear`, lalu restart worker queue deployment itu saja.
 5. Di Pengaturan Organisasi, isi nama, singkatan, logo, dan alamat. Biarkan Monev nonaktif.
 6. Pastikan master Unit Kerja dan flag Keterlibatan benar. Kategori export tidak memakai pembandingan nama.
-7. Tetapkan Koordinator berperiode pada setiap Unit Kerja yang akan diekspor. Lengkapi nama, NIP, jabatan, dan tanda tangan JPEG/PNG/WebP.
+7. Tetapkan Koordinator berperiode pada setiap Unit Kerja yang akan diekspor. Lengkapi nama, NIP, jabatan, dan tanda tangan JPEG/PNG.
 8. Berikan permission `manage_all_report_evaluations` kepada pimpinan yang memerlukan akses global dan `export_report_evaluations` kepada pelaksana export. Role admin/super-admin tetap mengikuti policy existing.
 9. Jalankan smoke test Report lama, Excel lama, PDF publik, tambah/edit/riwayat evaluasi, dan satu export Monev.
 10. Untuk Kupang, aktifkan Monev dari Pengaturan Organisasi. Untuk Sorong, biarkan nonaktif.

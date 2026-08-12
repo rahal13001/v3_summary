@@ -46,7 +46,7 @@ The Kupang adoption adds three additive migration groups:
 2. `users.coordinator_signature_path` and `work_unit_coordinators` store private signature paths and non-overlapping assignment history.
 3. `report_evaluations` and `report_evaluation_revisions` store monthly content and append-only field diffs.
 
-Coordinator signatures use the `local` disk under `storage/app/coordinator-signatures`; they must not be exposed through `public-storage`. Validate JPEG/PNG/WebP, keep each deployment's storage separate, and back up it together with that deployment's database. Organization logos remain on the `public` disk.
+Coordinator signatures use the `local` disk under `storage/app/coordinator-signatures`; they must not be exposed through `public-storage`. Validate JPEG/PNG (the workbook drawing formats supported by this deployment), keep each deployment's storage separate, and back up it together with that deployment's database. Organization logos remain on the `public` disk.
 
 Evidence links are JSON arrays containing only validated HTTP/HTTPS URLs. Evaluations do not duplicate Report files and do not change public PDF output. The Monev workbook converts rich text to plain text, neutralizes formula prefixes, and embeds the currently active coordinator's private signature.
 

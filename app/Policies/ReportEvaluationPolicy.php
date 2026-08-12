@@ -43,6 +43,13 @@ class ReportEvaluationPolicy
             ->exists();
     }
 
+    public function hasReportWideAccess(User $user, Report $report): bool
+    {
+        return $this->hasGlobalAccess($user)
+            || (string) $report->user_id === (string) $user->getKey()
+            || $report->followers()->whereKey($user)->exists();
+    }
+
     public function update(User $user, ReportEvaluation $evaluation): bool
     {
         return $this->canManage($user, $evaluation->report, $evaluation->workUnit);

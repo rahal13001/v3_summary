@@ -90,4 +90,14 @@ class OrganizationSettingsTest extends TestCase
         $this->assertSame('LPSPL Kupang', $internal->organizerName());
         $this->assertNull($external->organizerName());
     }
+
+    public function test_order_email_uses_deployment_identity_and_url(): void
+    {
+        $source = file_get_contents(resource_path('views/emails/order_reminder.blade.php'));
+
+        $this->assertStringContainsString('OrganizationContext::class)->shortName()', $source);
+        $this->assertStringContainsString("url('/disposisi/'.\$order->order_slug)", $source);
+        $this->assertStringNotContainsString('summary.timurbersinar.com', $source);
+        $this->assertStringNotContainsString('LPSPL Sorong', $source);
+    }
 }

@@ -13,10 +13,10 @@
         <table cellpadding="0" cellspacing="0" width="100%">
           <tr>
             <td width="60">
-              <img src="https://summary.timurbersinar.com/img/logoweb.png" alt="LPSPL Logo" width="50" style="display: block;">
+              <img src="{{ asset('img/logoweb.png') }}" alt="{{ app(\App\Services\OrganizationContext::class)->shortName() }} Logo" width="50" style="display: block;">
             </td>
             <td style="padding-left: 10px;">
-              <h2 style="margin: 0; font-size: 20px; color: #007BFF;">LPSPL Sorong</h2>
+              <h2 style="margin: 0; font-size: 20px; color: #007BFF;">{{ app(\App\Services\OrganizationContext::class)->shortName() }}</h2>
               <p style="margin: 0; font-size: 14px; color: #777777;">Informasi Disposisi</p>
             </td>
           </tr>
@@ -39,7 +39,7 @@
         </ul>
         <p>Mohon untuk dapat dipersiapkan. Informasi lebih lanjut silakan klik tautan di bawah ini:</p>
         <p>
-          <a href="https://summary.timurbersinar.com/disposisi/{{ $order->order_slug }}"
+          <a href="{{ url('/disposisi/'.$order->order_slug) }}"
              style="color: #007BFF; text-decoration: none; font-weight: bold;"
              title="Lihat Detail Disposisi">
             Lihat Detail Disposisi
@@ -52,7 +52,7 @@
     <!-- Footer -->
     <tr>
       <td style="text-align: center; font-size: 12px; color: #999999; padding: 20px;">
-        &copy; {{ date('Y') }} LPSPL Sorong – All rights reserved.
+        &copy; {{ date('Y') }} {{ app(\App\Services\OrganizationContext::class)->shortName() }} – All rights reserved.
       </td>
     </tr>
   </table>

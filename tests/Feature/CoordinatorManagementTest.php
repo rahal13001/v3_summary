@@ -159,7 +159,7 @@ class CoordinatorManagementTest extends TestCase
         foreach ([$userResource, $profilePage] as $source) {
             $this->assertStringContainsString("FileUpload::make('coordinator_signature_path')", $source);
             $this->assertStringContainsString("->disk('local')", $source);
-            $this->assertStringContainsString("'image/jpeg', 'image/png', 'image/webp'", $source);
+            $this->assertStringContainsString("'image/jpeg', 'image/png'", $source);
         }
 
         $this->assertStringContainsString('CoordinatorAssignmentService::class', $relationManager);

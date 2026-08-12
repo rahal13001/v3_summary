@@ -35,12 +35,12 @@ class EditProfile extends \Filament\Auth\Pages\EditProfile
                     ->maxLength(255),
                 FileUpload::make('coordinator_signature_path')
                     ->label('Tanda tangan koordinator')
-                    ->helperText('PNG, JPEG, atau WebP maksimal 2 MB. Digunakan pada export Monev.')
+                    ->helperText('PNG atau JPEG maksimal 2 MB. Digunakan pada export Monev.')
                     ->disk('local')
                     ->directory('coordinator-signatures')
                     ->visibility('private')
                     ->image()
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->acceptedFileTypes(['image/jpeg', 'image/png'])
                     ->maxSize(2048),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
