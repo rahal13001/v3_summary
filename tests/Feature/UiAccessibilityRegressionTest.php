@@ -14,7 +14,7 @@ class UiAccessibilityRegressionTest extends TestCase
         $richText = file_get_contents(resource_path('views/infolists/components/how.blade.php'));
         $theme = file_get_contents(resource_path('views/filament/styles/signature-theme.blade.php'));
 
-        $this->assertStringContainsString("->brandName('Summary')", $provider);
+        $this->assertStringContainsString('->brandName(fn (): string => app(OrganizationContext::class)->shortName())', $provider);
         $this->assertStringContainsString(':root.dark .filament-display-how a', $richText);
         $this->assertStringContainsString('color: #60a5fa', $richText);
         $this->assertStringContainsString('.filament-display-how a:focus-visible', $richText);

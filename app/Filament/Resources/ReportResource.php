@@ -8,6 +8,7 @@ use App\Filament\Resources\ReportResource\Pages\CreateReport;
 use App\Filament\Resources\ReportResource\Pages\EditReport;
 use App\Filament\Resources\ReportResource\Pages\ListReports;
 use App\Filament\Resources\ReportResource\Pages\ViewReport;
+use App\Filament\Resources\ReportResource\RelationManagers\EvaluationsRelationManager;
 use App\Models\Indicator;
 use App\Models\Involvement;
 use App\Models\Report;
@@ -791,7 +792,7 @@ class ReportResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            EvaluationsRelationManager::class,
         ];
     }
 

@@ -21,9 +21,9 @@
 
 ## Phase 4 — UI Evaluasi
 
-- [ ] Task 8: Tambahkan relation manager Evaluasi pada detail Report.
-- [ ] Task 9: Tambahkan linimasa riwayat read-only.
-- [ ] Checkpoint D: uji alur UI, audit, XSS, accessibility, dan feature gating.
+- [x] Task 8: Tambahkan relation manager Evaluasi pada detail Report.
+- [x] Task 9: Tambahkan linimasa riwayat read-only.
+- [x] Checkpoint D: uji alur UI, audit, XSS, accessibility, dan feature gating.
 
 ## Phase 5 — Export Monev
 

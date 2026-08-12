@@ -23,6 +23,26 @@ class ReportEvaluationPolicy
         return $this->canManage($user, $report, $workUnit);
     }
 
+    public function canManageReport(User $user, Report $report): bool
+    {
+        if ($this->hasGlobalAccess($user) || (string) $report->user_id === (string) $user->getKey()) {
+            return true;
+        }
+
+        if ($report->followers()->whereKey($user)->exists()) {
+            return true;
+        }
+
+        return $report->workUnits()
+            ->whereHas('coordinatorAssignments', fn ($query) => $query
+                ->where('user_id', $user->getKey())
+                ->whereDate('starts_at', '<=', today())
+                ->where(fn ($query) => $query
+                    ->whereNull('ends_at')
+                    ->orWhereDate('ends_at', '>=', today())))
+            ->exists();
+    }
+
     public function update(User $user, ReportEvaluation $evaluation): bool
     {
         return $this->canManage($user, $evaluation->report, $evaluation->workUnit);
