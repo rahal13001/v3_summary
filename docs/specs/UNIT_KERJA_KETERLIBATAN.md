@@ -4,8 +4,8 @@
 
 Menambahkan dua dimensi organisasi pada laporan kegiatan LPRL Sorong:
 
-1. Unit Kerja menunjukkan satu atau lebih kantor di bawah naungan LPRL Sorong yang mengerjakan kegiatan.
-2. Keterlibatan menunjukkan satu posisi LPRL Sorong dalam kegiatan, misalnya Penyelenggara, Peserta, Sponsor, atau Pemberi Modal.
+1. Unit Kerja menunjukkan satu atau lebih kantor di bawah naungan organisasi deployment yang mengerjakan kegiatan.
+2. Keterlibatan menunjukkan satu posisi organisasi deployment dalam kegiatan, misalnya Penyelenggara, Peserta, Sponsor, atau Pemberi Modal.
 
 Pengguna utama adalah admin pengelola referensi dan writer penginput laporan. Fitur berhasil bila laporan baru selalu mencatat minimal satu Unit Kerja dan satu Keterlibatan, perilaku kolom Penyelenggara mengikuti konfigurasi Keterlibatan, dan laporan lama tetap dapat dibaca tanpa migrasi data tebakan.
 
@@ -18,7 +18,7 @@ Pengguna utama adalah admin pengelola referensi dan writer penginput laporan. Fi
 - Laporan lama boleh mempunyai `involvement_id = null` dan tidak mempunyai Unit Kerja sampai diedit.
 - Unit Kerja mempunyai `name`, `status`, dan satu `unit` dari pilihan tetap Satuan Pelayanan, Wilayah Kerja, atau Gerai Pelayanan.
 - Keterlibatan mempunyai `name`, `status`, dan penanda boolean `is_lprl_organizer` agar jenis baru tidak bergantung pada pencocokan nama.
-- Jika Keterlibatan bertanda `is_lprl_organizer`, form mengisi `penyelenggara` dengan `LPRL Sorong` dan mencegah perubahan manual.
+- Jika Keterlibatan bertanda `is_lprl_organizer`, form mengisi `penyelenggara` dengan singkatan Pengaturan Organisasi dan mencegah perubahan manual. Nama flag legacy dipertahankan untuk kompatibilitas.
 - Jika Keterlibatan tidak bertanda tersebut, form menghapus nilai otomatis lama lalu mengaktifkan dan mewajibkan input Penyelenggara.
 - Pergantian Keterlibatan selalu membersihkan nilai Penyelenggara yang tidak lagi sesuai.
 
@@ -177,7 +177,7 @@ public function workUnits()
 2. Writer wajib memilih minimal satu Unit Kerja dan satu Keterlibatan saat membuat atau mengedit Report.
 3. Report lama tanpa data baru tetap dapat dilihat tanpa error dan tanpa perubahan data otomatis.
 4. Report menyimpan relasi many-to-many Unit Kerja tanpa pasangan duplikat.
-5. Keterlibatan internal mengisi Penyelenggara menjadi `LPRL Sorong`; keterlibatan lain mengosongkan lalu mewajibkan input manual.
+5. Keterlibatan internal mengisi Penyelenggara dari singkatan organisasi aktif; keterlibatan lain mengosongkan lalu mewajibkan input manual.
 6. Detail, filter daftar, Excel, dan PDF menyajikan dimensi baru secara konsisten.
 7. Resource baru mengikuti otorisasi Filament Shield.
 8. Focused tests dan full regression suite lulus pada SQLite in-memory.

@@ -5,6 +5,8 @@
 Dokumen ini merekam skema data yang dapat dibuktikan dari migration dan model Eloquent sampai 11 Agustus 2026. Fokus utama adalah tabel bisnis; tabel framework dan authorization diringkas terpisah.
 
 > Fitur Unit Kerja dan Keterlibatan menambah skema secara aditif setelah upgrade Laravel 13 dan Filament 5. Kontrak tabel lama tetap dipertahankan.
+>
+> Ekstensi Kupang menambah Pengaturan Organisasi, histori Koordinator Unit Kerja, Evaluasi Monev, dan revision append-only. Seluruh tabel bersifat aditif dan Report historis tidak wajib mempunyai evaluasi.
 
 - `PK`: primary key
 - `FK`: foreign key yang benar-benar dideklarasikan di migration
@@ -183,6 +185,11 @@ Catatan kardinalitas: model mendefinisikan `Report::documentation()` sebagai `ha
 | `reports` | `teams` | M:N | `report_teams` | Pivot cascade dari kedua sisi |
 | `reports` | `work_units` | M:N | `report_work_unit` dengan pasangan unik | Cascade saat report dihapus; restrict saat Unit Kerja masih dipakai |
 | `involvements` | `reports` | 1:N, opsional pada histori | `reports.involvement_id` nullable | Restrict saat Keterlibatan masih dipakai |
+| `work_units` | `users` | M:N berperiode | `work_unit_coordinators`; rentang aktif tidak boleh overlap per unit | Histori dipertahankan; user boleh mengoordinasikan banyak unit |
+| `reports` | `report_evaluations` | 1:N | Unik `report_id + work_unit_id + period` | Evaluasi dibatasi pada Unit Kerja yang terhubung ke Report |
+| `work_units` | `report_evaluations` | 1:N | FK restrict | Evaluasi unit lain tidak boleh terbaca/tertulis silang |
+| `report_evaluations` | `report_evaluation_revisions` | 1:N | FK cascade | Revision hanya insert; perubahan dan identitas editor disimpan dalam transaksi yang sama |
+| `organization_settings` | deployment | Singleton aplikasi | `key = default` unik | Identitas dan feature flag lokal deployment |
 | `reports` | `users` (followers) | M:N | `report_users` | Pivot cascade dari kedua sisi |
 | `users` | `orders` | 1:N | `orders.user_id` FK | Cascade |
 | `orders` | `executors` | 1:N | `executors.order_id` FK | Cascade |
@@ -241,6 +248,14 @@ erDiagram
 
 ## 5. Constraint dan Indeks Penting
 
+### Ekstensi organisasi dan Monev
+
+- `organization_settings.key` unik; aplikasi menggunakan singleton `default`.
+- `work_unit_coordinators` diindeks pada unit/rentang. Service memakai transaksi dan lock untuk menolak rentang overlap.
+- `report_evaluations(report_id, work_unit_id, period)` unik; `period` disimpan sebagai hari pertama bulan.
+- `report_evaluation_revisions(report_evaluation_id, changed_at)` diindeks; model menolak update/delete.
+- `users.coordinator_signature_path` adalah path disk privat `local`, bukan URL publik atau binary database.
+
 | Tabel | Constraint teramati |
 |---|---|
 | `users` | Email unik; primary key `id` |
@@ -262,11 +277,15 @@ Tidak ditemukan unique composite constraint pada `indicator_reports`, `report_te
 |---|---|---|
 | `User` | `users` | Authenticatable, role/permission, Sanctum, soft delete |
 | `Report` | `reports` | Slug route key, soft delete, pusat domain Summary |
+| `OrganizationSetting` | `organization_settings` | Singleton identitas deployment dan feature flag |
+| `WorkUnitCoordinator` | `work_unit_coordinators` | Histori koordinator berperiode |
+| `ReportEvaluation` | `report_evaluations` | Isi evaluasi per Report/Unit Kerja/periode |
+| `ReportEvaluationRevision` | `report_evaluation_revisions` | Audit diff append-only |
 | `Documentation` | `documentations` | Metadata path file laporan |
 | `Indicator` | `indicators` | Referensi IKU dengan slug |
 | `Team` | `teams` | Referensi tim kerja dengan slug |
-| `WorkUnit` | `work_units` | Referensi kantor LPRL Sorong dengan status dan kategori tetap |
-| `Involvement` | `involvements` | Referensi posisi LPRL Sorong dan flag penyelenggara internal |
+| `WorkUnit` | `work_units` | Referensi kantor organisasi aktif dengan status dan kategori tetap |
+| `Involvement` | `involvements` | Referensi posisi organisasi aktif dan flag penyelenggara internal |
 | `IndicatorReport` | `indicator_reports` | Model pivot |
 | `ReportTeam` | `report_teams` | Model pivot |
 | `ReportUser` | `report_users` | Model biasa untuk pivot followers; relasi eksplisit dikomentari |
@@ -285,7 +304,7 @@ Tidak ditemukan unique composite constraint pada `indicator_reports`, `report_te
 | Tim kerja | `teams` + `report_teams` | Jumlah laporan per tim |
 | Unit kerja | `work_units` + `report_work_unit` | Detail, filter laporan, PDF, dan Excel; terpisah dari tim kerja |
 | Keterlibatan | `involvements` + `reports.involvement_id` | Detail, filter laporan, PDF, Excel, dan kendali input Penyelenggara |
-| Penyelenggara | `reports.penyelenggara` | Nilai `LPRL Sorong` dipaksa saat involvement bertanda penyelenggara internal; selain itu diisi manual |
+| Penyelenggara | `reports.penyelenggara` | Singkatan organisasi aktif dipaksa saat involvement bertanda penyelenggara internal; selain itu diisi manual |
 | Peserta | `total_peserta`, `total_wanita` | Ditampilkan/diekspor, belum tampak agregasi dashboard |
 | Status order | `orders.order_status`, `executors.status` | Ringkasan progres disposisi |
 | Pelaksana | `executors.user_id` | Assignment dan pemantauan penyelesaian |

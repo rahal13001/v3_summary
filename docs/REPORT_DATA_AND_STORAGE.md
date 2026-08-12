@@ -23,7 +23,7 @@ These results do not justify clearing database paths automatically. A path can s
 7. Existing many-to-many report fields use the relationship state paths `followers`, `indicators`, and `teams`.
 8. `workUnits` is a separate many-to-many relationship and must not replace or reuse `teams`.
 9. Historical reports may have `involvement_id = null` and no `report_work_unit` rows. Viewing them must remain safe; editing requires the new fields.
-10. A report with an involvement flagged `is_lprl_organizer` always persists `LPRL Sorong` as `penyelenggara`, including when a client tampers with the read-only field.
+10. A report with an involvement flagged `is_lprl_organizer` always persists the current organization short name as `penyelenggara`, including when a client tampers with the read-only field.
 11. PDF and Excel eager-load `workUnits` and `involvement` so the new output does not introduce per-row relationship queries.
 
 ## Deployment of organization dimensions
@@ -37,6 +37,20 @@ php artisan shield:generate --all --option=permissions --panel=admin --no-intera
 ```
 
 The migration is additive. It leaves historical reports with `involvement_id = null` and does not create guessed Unit Kerja links. Seed only creates the initial `Penyelenggara` and `Peserta` values when missing. Do not use `migrate:fresh`, `migrate:refresh`, or `db:wipe` on an existing environment.
+
+## Organization, coordinator, and Monev storage
+
+The Kupang adoption adds three additive migration groups:
+
+1. `organization_settings` stores deployment identity, public logo path, address, and the Monev flag. The flag defaults to false, preserving Sorong behavior.
+2. `users.coordinator_signature_path` and `work_unit_coordinators` store private signature paths and non-overlapping assignment history.
+3. `report_evaluations` and `report_evaluation_revisions` store monthly content and append-only field diffs.
+
+Coordinator signatures use the `local` disk under `storage/app/coordinator-signatures`; they must not be exposed through `public-storage`. Validate JPEG/PNG/WebP, keep each deployment's storage separate, and back up it together with that deployment's database. Organization logos remain on the `public` disk.
+
+Evidence links are JSON arrays containing only validated HTTP/HTTPS URLs. Evaluations do not duplicate Report files and do not change public PDF output. The Monev workbook converts rich text to plain text, neutralizes formula prefixes, and embeds the currently active coordinator's private signature.
+
+See `docs/KUPANG_MONEV_DEPLOYMENT.md` for rollout and rollback steps.
 
 ## File restoration
 

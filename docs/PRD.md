@@ -1,5 +1,7 @@
 # Product Requirements Document — Summary
 
+> Pembaruan 12 Agustus 2026: satu source mendukung deployment Sorong dan Kupang yang terpisah. Identitas organisasi berasal dari Pengaturan Organisasi; Evaluasi Monev digate dan default-nya nonaktif.
+
 ## 1. Status Dokumen
 
 - Jenis: dokumentasi produk **as-is**
@@ -10,7 +12,7 @@
 
 ## 2. Ringkasan Produk
 
-Summary adalah aplikasi internal berbasis Laravel dan Filament untuk mencatat, mengelola, menyajikan, dan menganalisis laporan kegiatan dengan format 5W1H. Laporan dapat dikaitkan dengan penyusun, pengikut, indikator kinerja (IKU), tim kerja, unit kerja LPRL Sorong, jenis keterlibatan, dokumentasi, surat tugas, dan tanda tangan.
+Summary adalah aplikasi internal berbasis Laravel dan Filament untuk mencatat, mengelola, menyajikan, dan menganalisis laporan kegiatan dengan format 5W1H. Laporan dapat dikaitkan dengan penyusun, pengikut, indikator kinerja (IKU), tim kerja, Unit Kerja organisasi aktif, jenis keterlibatan, dokumentasi, surat tugas, dan tanda tangan.
 
 Aplikasi juga memiliki modul disposisi/order untuk menugaskan pekerjaan kepada satu atau lebih pelaksana. Pelaksana dapat mencatat status, bukti, deskripsi, tugas, dan menghubungkan hasilnya ke laporan Summary. Pengingat diberikan melalui email dan Firebase Cloud Messaging (FCM).
 
@@ -18,7 +20,7 @@ Aplikasi juga memiliki modul disposisi/order untuk menugaskan pekerjaan kepada s
 
 1. Menstandarkan pencatatan kegiatan dalam struktur 5W1H.
 2. Menyimpan bukti kegiatan dan dokumen pendukung dalam satu rekaman.
-3. Mengaitkan laporan dengan IKU, tim kerja, unit kerja, dan keterlibatan LPRL Sorong untuk analisis organisasi.
+3. Mengaitkan laporan dengan IKU, tim kerja, Unit Kerja, dan keterlibatan organisasi aktif untuk analisis.
 4. Menunjukkan kontribusi penyusun dan pengikut laporan.
 5. Menyediakan keluaran PDF, QR, verifikasi tanda tangan, dan Excel.
 6. Mengelola disposisi tugas dan memantau penyelesaiannya.
@@ -65,7 +67,7 @@ Setiap laporan menyimpan:
 - slug unik untuk URL publik;
 - relasi ke IKU dan tim kerja;
 - relasi ke minimal satu unit kerja yang melaksanakan kegiatan;
-- satu jenis keterlibatan LPRL Sorong;
+- satu jenis keterlibatan organisasi;
 - dokumentasi kegiatan, surat tugas, dan dokumen lain.
 
 Perilaku utama:
@@ -74,7 +76,7 @@ Perilaku utama:
 - Pengikut dapat dipilih lebih dari satu.
 - IKU dan tim kerja dapat dipilih lebih dari satu; form memprioritaskan referensi aktif.
 - Unit kerja dapat dipilih lebih dari satu dan berbeda secara semantik dari tim kerja; laporan baru atau laporan lama yang diedit wajib mempunyai minimal satu unit kerja.
-- Keterlibatan dipilih satu. Bila jenisnya ditandai sebagai LPRL penyelenggara, nilai Penyelenggara dipaksa menjadi `LPRL Sorong`; jenis lain mewajibkan input manual.
+- Keterlibatan dipilih satu. Bila jenisnya ditandai sebagai organisasi penyelenggara, nilai Penyelenggara diisi dari singkatan Pengaturan Organisasi; jenis lain mewajibkan input manual.
 - Laporan historis boleh belum mempunyai unit kerja dan keterlibatan sampai record diedit; sistem tidak menebak nilai lama.
 - Isi `how` memakai rich-text editor.
 - Laporan menggunakan soft delete serta menyediakan restore/force delete sesuai izin.
@@ -106,11 +108,11 @@ Perilaku utama:
 
 ### 5.6 Referensi unit kerja dan keterlibatan
 
-- Unit Kerja mencatat kantor di bawah naungan LPRL Sorong yang mengerjakan kegiatan, bukan tim kerja internal.
+- Unit Kerja mencatat kantor di bawah naungan organisasi aktif yang mengerjakan kegiatan, bukan tim kerja internal.
 - Setiap Unit Kerja mempunyai nama, status aktif/nonaktif, dan kategori tetap: Satuan Pelayanan, Wilayah Kerja, atau Gerai Pelayanan.
 - Report dan Unit Kerja berelasi many-to-many melalui `report_work_unit`.
-- Keterlibatan adalah master fleksibel untuk posisi LPRL Sorong pada kegiatan, misalnya Penyelenggara, Peserta, Sponsor, atau Pemberi Modal.
-- Penanda `is_lprl_organizer` menentukan apakah Penyelenggara diisi otomatis `LPRL Sorong`.
+- Keterlibatan adalah master fleksibel untuk posisi organisasi aktif pada kegiatan, misalnya Penyelenggara, Peserta, Sponsor, atau Pemberi Modal.
+- Penanda `is_lprl_organizer` menentukan apakah Penyelenggara diisi otomatis dari singkatan Pengaturan Organisasi. Nama kolom legacy dipertahankan untuk kompatibilitas.
 - Master yang sudah digunakan tidak dihapus; admin menonaktifkannya agar histori tetap utuh.
 
 ### 5.7 Dashboard analitik
@@ -139,6 +141,16 @@ Tanggal analisis menggunakan kolom kegiatan `reports.when`, bukan tanggal pembua
 ### 5.9 Ekspor Excel
 
 Ekspor laporan terpilih memuat penyusun, pengikut, nomor ST, 5W1H, IKU, tim, Unit Kerja, Keterlibatan, Penyelenggara, peserta, dan persentase wanita. Isi rich text `how` diubah menjadi teks biasa, tanggal diformat `dd-mm-YYYY`, dan lembar menggunakan font Arial serta wrap text.
+
+Ekspor Monev adalah action independen dari pemilihan baris. Pengguna memilih Unit Kerja, bulan, tahun, lokasi, dan tanggal tanda tangan. Dataset memuat Report pada Unit Kerja yang rentangnya overlap periode, atau Report lama yang mempunyai evaluasi pada periode itu. INTERNAL ditentukan oleh `involvements.is_lprl_organizer`; selain itu EKSTERNAL. Excel mengikuti matriks 10 kolom, memakai koordinator aktif dan tanda tangan privat, menetralkan formula, dan membatasi bukti pada HTTP/HTTPS.
+
+### 5.9.1 Evaluasi Monev
+
+- Satu evaluasi unik untuk kombinasi Report, Unit Kerja, dan periode hari pertama bulan.
+- Field narasi dan daftar URL bersifat nullable; tidak ada record kosong yang dibuat otomatis.
+- Penulis/pengikut Report dapat mengelola seluruh unit Report terkait; koordinator aktif hanya unitnya; admin/super-admin atau ability `manage_all_report_evaluations` bersifat global.
+- Setiap create/update menyimpan diff append-only pada transaksi yang sama. No-op tidak membuat revision.
+- Action export memerlukan ability `export_report_evaluations`. UI hanya ada bila Pengaturan Organisasi mengaktifkan Monev.
 
 ### 5.10 Disposisi/order
 

@@ -34,6 +34,6 @@
 
 ## Phase 6 — Handoff
 
-- [ ] Task 13: Perbarui PRD, ERD, data/storage docs, dan runbook dua deployment.
+- [x] Task 13: Perbarui PRD, ERD, data/storage docs, dan runbook dua deployment.
 - [ ] Task 14: Jalankan full test, Pint, strict PSR-4, frontend build, diff check, dan review multi-axis.
 - [ ] Checkpoint final: seluruh Definition of Done terpenuhi dan siap direview pengguna.
