@@ -14,6 +14,7 @@ use App\Models\Report;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkUnit;
+use App\Services\OrganizationContext;
 use DiscoveryDesign\FilamentGaze\Forms\Components\GazeBanner;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
@@ -100,7 +101,7 @@ class ReportResource extends Resource
                             ->default(Auth::user()->id)
                             ->label('Penyusun')
                             ->searchable()
-                            ->searchPrompt('Cari nama pegawai LPSPL Sorong'),
+                            ->searchPrompt('Cari nama pegawai '.app(OrganizationContext::class)->shortName()),
                         Select::make('followers')
                             ->nullable()
                             ->relationship(
@@ -111,7 +112,7 @@ class ReportResource extends Resource
                             ->preload()
                             ->label('Pengikut')
                             ->searchable()
-                            ->searchPrompt('Cari nama pegawai LPSPL Sorong')
+                            ->searchPrompt('Cari nama pegawai '.app(OrganizationContext::class)->shortName())
                             ->multiple(),
                         TextInput::make('no_st')
                             ->maxLength(255)

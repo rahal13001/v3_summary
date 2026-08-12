@@ -2,26 +2,27 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
+use App\Services\OrganizationContext;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DiscoveryDesign\FilamentGaze\FilamentGazePlugin;
-use Filament\Pages;
-use Filament\Panel;
-use Filament\Widgets;
-use Filament\PanelProvider;
-use Filament\View\PanelsRenderHook;
-use Filament\Navigation\MenuItem;
-use Filament\Support\Colors\Color;
-use App\Filament\Pages\Auth\EditProfile;
 use Filament\Http\Middleware\Authenticate;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Session\Middleware\AuthenticateSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Filament\Pages;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
+use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\AuthenticateSession;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -36,10 +37,22 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->emailVerification()
             ->profile(EditProfile::class, isSimple: true)
-            ->brandName('Summary')
-            ->brandLogo(asset('img/summarylight.png'))
-            ->darkModeBrandLogo(asset('img/summarydark.png'))
-            ->brandLogoHeight('4rem')            
+            ->brandName(fn (): string => app(OrganizationContext::class)->shortName())
+            ->brandLogo(function (): string {
+                $logoPath = app(OrganizationContext::class)->logoPath();
+
+                return filled($logoPath)
+                    ? Storage::disk('public')->url($logoPath)
+                    : asset('img/summarylight.png');
+            })
+            ->darkModeBrandLogo(function (): string {
+                $logoPath = app(OrganizationContext::class)->logoPath();
+
+                return filled($logoPath)
+                    ? Storage::disk('public')->url($logoPath)
+                    : asset('img/summarydark.png');
+            })
+            ->brandLogoHeight('4rem')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -76,8 +89,8 @@ class AdminPanelProvider extends PanelProvider
 
             ->plugins([
                 FilamentShieldPlugin::make(),
-                FilamentGazePlugin::make()
-                
+                FilamentGazePlugin::make(),
+
             ])
             ->userMenuItems([
 

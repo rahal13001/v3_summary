@@ -6,6 +6,7 @@ use App\Filament\Resources\InvolvementResource\Pages\CreateInvolvement;
 use App\Filament\Resources\InvolvementResource\Pages\EditInvolvement;
 use App\Filament\Resources\InvolvementResource\Pages\ListInvolvements;
 use App\Models\Involvement;
+use App\Services\OrganizationContext;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -33,7 +34,7 @@ class InvolvementResource extends Resource
         return $schema
             ->components([
                 Section::make('Informasi Keterlibatan')
-                    ->description('Atur jenis peran LPRL Sorong dalam kegiatan.')
+                    ->description('Atur jenis peran '.app(OrganizationContext::class)->shortName().' dalam kegiatan.')
                     ->columns([
                         'default' => 1,
                         'md' => 2,
@@ -53,7 +54,7 @@ class InvolvementResource extends Resource
                             ->native(false),
                         Toggle::make('is_lprl_organizer')
                             ->label('LPRL sebagai penyelenggara')
-                            ->helperText('Jika aktif, Penyelenggara pada laporan otomatis menjadi LPRL Sorong.')
+                            ->helperText('Jika aktif, Penyelenggara pada laporan otomatis memakai nama organisasi.')
                             ->default(false)
                             ->inline(false),
                     ]),

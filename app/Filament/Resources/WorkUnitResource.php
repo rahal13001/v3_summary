@@ -6,6 +6,7 @@ use App\Filament\Resources\WorkUnitResource\Pages\CreateWorkUnit;
 use App\Filament\Resources\WorkUnitResource\Pages\EditWorkUnit;
 use App\Filament\Resources\WorkUnitResource\Pages\ListWorkUnits;
 use App\Models\WorkUnit;
+use App\Services\OrganizationContext;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -33,7 +34,7 @@ class WorkUnitResource extends Resource
         return $schema
             ->components([
                 Section::make('Informasi Unit Kerja')
-                    ->description('Kelola kantor di bawah naungan LPRL Sorong.')
+                    ->description('Kelola kantor di bawah naungan '.app(OrganizationContext::class)->shortName().'.')
                     ->columns([
                         'default' => 1,
                         'md' => 2,

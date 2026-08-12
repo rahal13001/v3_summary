@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\OrganizationContext;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -37,7 +38,9 @@ class Involvement extends Model
 
     public function organizerName(): ?string
     {
-        return $this->is_lprl_organizer ? 'LPRL Sorong' : null;
+        return $this->is_lprl_organizer
+            ? app(OrganizationContext::class)->shortName()
+            : null;
     }
 
     public function reports(): HasMany

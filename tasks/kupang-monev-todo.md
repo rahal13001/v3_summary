@@ -2,9 +2,9 @@
 
 ## Phase 1 — Fondasi multi-deployment
 
-- [ ] Task 1: Tambahkan Pengaturan Organisasi dan feature flag Monev.
-- [ ] Task 2: Generalisasi identitas organisasi dan penyelenggara tanpa regresi Sorong.
-- [ ] Checkpoint A: uji dua profil organisasi, feature gating, dan kontrak API.
+- [x] Task 1: Tambahkan Pengaturan Organisasi dan feature flag Monev.
+- [x] Task 2: Generalisasi identitas organisasi dan penyelenggara tanpa regresi Sorong.
+- [x] Checkpoint A: uji dua profil organisasi, feature gating, dan kontrak API.
 
 ## Phase 2 — Koordinator dan otorisasi
 
