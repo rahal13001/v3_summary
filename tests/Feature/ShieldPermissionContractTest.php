@@ -21,7 +21,7 @@ class ShieldPermissionContractTest extends TestCase
 
         $permissions = FilamentShield::getEntitiesPermissions();
 
-        $this->assertCount(107, $permissions);
+        $this->assertCount(109, $permissions);
         $this->assertSame([
             'view_any_role',
             'view_role',
@@ -49,6 +49,8 @@ class ShieldPermissionContractTest extends TestCase
         $this->assertContains('view_organization_setting', $permissions);
         $this->assertContains('create_organization_setting', $permissions);
         $this->assertContains('update_organization_setting', $permissions);
+        $this->assertContains('manage_all_report_evaluations', $permissions);
+        $this->assertContains('export_report_evaluations', $permissions);
         $this->assertNotContains('page_Dashboard', $permissions);
         $this->assertSame([], array_values(array_filter(
             $permissions,

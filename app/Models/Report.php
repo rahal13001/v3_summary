@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
@@ -87,6 +88,11 @@ class Report extends Model
     public function involvement()
     {
         return $this->belongsTo(Involvement::class);
+    }
+
+    public function evaluations(): HasMany
+    {
+        return $this->hasMany(ReportEvaluation::class);
     }
 
     public function getRouteKeyName()

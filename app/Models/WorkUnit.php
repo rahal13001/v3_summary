@@ -61,6 +61,11 @@ class WorkUnit extends Model
         return $this->hasMany(WorkUnitCoordinator::class);
     }
 
+    public function reportEvaluations(): HasMany
+    {
+        return $this->hasMany(ReportEvaluation::class);
+    }
+
     public function currentCoordinatorAssignment(): HasOne
     {
         $today = today()->toDateString();

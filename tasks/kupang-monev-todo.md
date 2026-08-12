@@ -14,10 +14,10 @@
 
 ## Phase 3 — Evaluasi dan audit
 
-- [ ] Task 5: Tambahkan skema/model Evaluasi Monev.
-- [ ] Task 6: Tambahkan revision log append-only.
-- [ ] Task 7: Tambahkan policy evaluasi berbasis Report, Unit Kerja, dan permission.
-- [ ] Checkpoint C: uji transaksi, authorization matrix, dan kompatibilitas data lama.
+- [x] Task 5: Tambahkan skema/model Evaluasi Monev.
+- [x] Task 6: Tambahkan revision log append-only.
+- [x] Task 7: Tambahkan policy evaluasi berbasis Report, Unit Kerja, dan permission.
+- [x] Checkpoint C: uji transaksi, authorization matrix, dan kompatibilitas data lama.
 
 ## Phase 4 — UI Evaluasi
 

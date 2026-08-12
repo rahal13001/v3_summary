@@ -1,8 +1,8 @@
 <?php
 
 declare(strict_types=1);
-use App\Filament\Resources\Roles\RoleResource;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\Roles\RoleResource;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 
@@ -27,7 +27,7 @@ return [
             'pages' => true,
             'widgets' => true,
             'resources' => true,
-            'custom_permissions' => false,
+            'custom_permissions' => true,
         ],
     ],
 
@@ -120,7 +120,7 @@ return [
         'separator' => ':',
         'case' => 'pascal',
         'generate' => true,
-        'format_custom_permission_keys' => true,
+        'format_custom_permission_keys' => false,
     ],
 
     /*
@@ -253,7 +253,10 @@ return [
     |
     */
 
-    'custom_permissions' => [],
+    'custom_permissions' => [
+        'manage_all_report_evaluations' => 'Kelola seluruh Evaluasi Monev',
+        'export_report_evaluations' => 'Export Evaluasi Monev',
+    ],
 
     /*
     |--------------------------------------------------------------------------

@@ -111,4 +111,19 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             ->withPivot(['starts_at', 'ends_at'])
             ->withTimestamps();
     }
+
+    public function createdReportEvaluations()
+    {
+        return $this->hasMany(ReportEvaluation::class, 'created_by');
+    }
+
+    public function editedReportEvaluations()
+    {
+        return $this->hasMany(ReportEvaluation::class, 'updated_by');
+    }
+
+    public function reportEvaluationRevisions()
+    {
+        return $this->hasMany(ReportEvaluationRevision::class, 'changed_by');
+    }
 }
