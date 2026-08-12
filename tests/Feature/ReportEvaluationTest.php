@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WorkUnit;
 use App\Services\ReportEvaluationService;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
@@ -30,6 +31,33 @@ class ReportEvaluationTest extends TestCase
         $this->assertTrue(Schema::hasColumns('report_evaluation_revisions', [
             'id', 'report_evaluation_id', 'changed_by', 'changed_at', 'changes',
         ]));
+        $this->assertTrue(Schema::hasIndex(
+            'report_evaluation_revisions',
+            'report_eval_revisions_evaluation_changed_idx',
+        ));
+    }
+
+    public function test_evaluation_migration_can_resume_after_mysql_partial_ddl_failure(): void
+    {
+        Schema::table('report_evaluation_revisions', function (Blueprint $table): void {
+            $table->dropIndex('report_eval_revisions_evaluation_changed_idx');
+        });
+
+        $this->assertFalse(Schema::hasIndex(
+            'report_evaluation_revisions',
+            'report_eval_revisions_evaluation_changed_idx',
+        ));
+
+        $migration = require database_path('migrations/2026_08_12_000003_create_report_evaluations_tables.php');
+
+        $migration->up();
+
+        $this->assertTrue(Schema::hasTable('report_evaluations'));
+        $this->assertTrue(Schema::hasTable('report_evaluation_revisions'));
+        $this->assertTrue(Schema::hasIndex(
+            'report_evaluation_revisions',
+            'report_eval_revisions_evaluation_changed_idx',
+        ));
     }
 
     public function test_evaluation_is_unique_per_report_unit_and_normalized_month(): void
