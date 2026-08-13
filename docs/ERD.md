@@ -2,7 +2,7 @@
 
 ## 1. Tujuan dan Notasi
 
-Dokumen ini merekam skema data yang dapat dibuktikan dari migration dan model Eloquent sampai 11 Agustus 2026. Fokus utama adalah tabel bisnis; tabel framework dan authorization diringkas terpisah.
+Dokumen ini merekam skema data yang dapat dibuktikan dari migration dan model Eloquent sampai 13 Agustus 2026. Fokus utama adalah tabel bisnis; tabel framework dan authorization diringkas terpisah.
 
 > Fitur Unit Kerja dan Keterlibatan menambah skema secara aditif setelah upgrade Laravel 13 dan Filament 5. Kontrak tabel lama tetap dipertahankan.
 >
@@ -175,6 +175,20 @@ erDiagram
 
 Catatan kardinalitas: model mendefinisikan `Report::documentation()` sebagai `hasOne`, tetapi database tidak memberi unique constraint pada `documentations.report_id`. Karena itu sifat satu-ke-satu dijaga oleh aplikasi, bukan oleh constraint database.
 
+### 2.1 Singleton identitas deployment
+
+| Kolom `organization_settings` | Tipe/aturan | Fungsi |
+|---|---|---|
+| `key` | string, unik, default `default` | Menjamin satu konfigurasi aktif per database |
+| `app_name` | string nullable | Nama web/aplikasi, misalnya Summary atau Teripang |
+| `name`, `short_name` | string | Identitas organisasi |
+| `logo_path`, `favicon_path` | string nullable | Path aset pada public disk |
+| `address` | text nullable | Alamat organisasi |
+| `organizer_name` | string nullable | Nama default kolom Penyelenggara |
+| `organizer_input_mode` | string, default `locked` | Kebijakan `locked`, `editable`, atau `manual` |
+| `monev_enabled` | boolean, default `false` | Feature flag Evaluasi Monev |
+| timestamps | timestamp | Audit waktu perubahan |
+
 ## 3. Kamus Relasi
 
 | Dari | Ke | Kardinalitas aplikasi | Implementasi | Perilaku delete |
@@ -250,7 +264,7 @@ erDiagram
 
 ### Ekstensi organisasi dan Monev
 
-- `organization_settings.key` unik; aplikasi menggunakan singleton `default`.
+- `organization_settings.key` unik; aplikasi menggunakan singleton `default`. `organizer_input_mode` divalidasi aplikasi terhadap `locked`, `editable`, dan `manual` dengan fallback aman ke `locked`.
 - `work_unit_coordinators` diindeks pada unit/rentang. Service memakai transaksi dan lock untuk menolak rentang overlap.
 - `report_evaluations(report_id, work_unit_id, period)` unik; `period` disimpan sebagai hari pertama bulan.
 - `report_evaluation_revisions(report_evaluation_id, changed_at)` diindeks; model menolak update/delete.
@@ -277,7 +291,7 @@ Tidak ditemukan unique composite constraint pada `indicator_reports`, `report_te
 |---|---|---|
 | `User` | `users` | Authenticatable, role/permission, Sanctum, soft delete |
 | `Report` | `reports` | Slug route key, soft delete, pusat domain Summary |
-| `OrganizationSetting` | `organization_settings` | Singleton identitas deployment dan feature flag |
+| `OrganizationSetting` | `organization_settings` | Singleton branding, identitas deployment, kebijakan Penyelenggara, dan feature flag |
 | `WorkUnitCoordinator` | `work_unit_coordinators` | Histori koordinator berperiode |
 | `ReportEvaluation` | `report_evaluations` | Isi evaluasi per Report/Unit Kerja/periode |
 | `ReportEvaluationRevision` | `report_evaluation_revisions` | Audit diff append-only |

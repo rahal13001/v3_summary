@@ -5,6 +5,10 @@
   <title>Disposisi</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f9; font-family: Arial, sans-serif;">
+  @php
+    $organization = app(\App\Services\OrganizationContext::class);
+    $logoUrl = $organization->logoUrl() ?: asset('img/logoweb.png');
+  @endphp
   <table align="center" cellpadding="0" cellspacing="0" width="600" style="border: 1px solid #e0e0e0; background-color: #ffffff; margin-top: 30px;">
     
     <!-- Header -->
@@ -13,10 +17,10 @@
         <table cellpadding="0" cellspacing="0" width="100%">
           <tr>
             <td width="60">
-              <img src="{{ asset('img/logoweb.png') }}" alt="{{ app(\App\Services\OrganizationContext::class)->shortName() }} Logo" width="50" style="display: block;">
+              <img src="{{ $logoUrl }}" alt="Logo {{ $organization->appName() }}" width="50" style="display: block;">
             </td>
             <td style="padding-left: 10px;">
-              <h2 style="margin: 0; font-size: 20px; color: #007BFF;">{{ app(\App\Services\OrganizationContext::class)->shortName() }}</h2>
+              <h2 style="margin: 0; font-size: 20px; color: #007BFF;">{{ $organization->appName() }}</h2>
               <p style="margin: 0; font-size: 14px; color: #777777;">Informasi Disposisi</p>
             </td>
           </tr>
@@ -52,7 +56,7 @@
     <!-- Footer -->
     <tr>
       <td style="text-align: center; font-size: 12px; color: #999999; padding: 20px;">
-        &copy; {{ date('Y') }} {{ app(\App\Services\OrganizationContext::class)->shortName() }} – All rights reserved.
+        &copy; {{ date('Y') }} {{ $organization->appName() }} – All rights reserved.
       </td>
     </tr>
   </table>

@@ -21,7 +21,6 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -37,21 +36,11 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->emailVerification()
             ->profile(EditProfile::class, isSimple: true)
-            ->brandName(fn (): string => app(OrganizationContext::class)->shortName())
-            ->brandLogo(function (): string {
-                $logoPath = app(OrganizationContext::class)->logoPath();
-
-                return filled($logoPath)
-                    ? Storage::disk('public')->url($logoPath)
-                    : asset('img/summarylight.png');
-            })
-            ->darkModeBrandLogo(function (): string {
-                $logoPath = app(OrganizationContext::class)->logoPath();
-
-                return filled($logoPath)
-                    ? Storage::disk('public')->url($logoPath)
-                    : asset('img/summarydark.png');
-            })
+            ->brandName(fn (): string => app(OrganizationContext::class)->appName())
+            ->brandLogo(fn (): string => app(OrganizationContext::class)->logoUrl()
+                ?: asset('img/summarylight.png'))
+            ->darkModeBrandLogo(fn (): string => app(OrganizationContext::class)->logoUrl()
+                ?: asset('img/summarydark.png'))
             ->brandLogoHeight('4rem')
             ->colors([
                 'primary' => Color::Amber,
@@ -61,7 +50,8 @@ class AdminPanelProvider extends PanelProvider
                 fn () => view('filament.styles.signature-theme'),
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->favicon(asset('img/logoweb.png'))
+            ->favicon(fn (): string => app(OrganizationContext::class)->faviconUrl()
+                ?: asset('img/logoweb.png'))
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->databaseNotifications()
             ->unsavedChangesAlerts()

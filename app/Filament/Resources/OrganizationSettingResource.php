@@ -8,6 +8,7 @@ use App\Filament\Resources\OrganizationSettingResource\Pages\ListOrganizationSet
 use App\Models\OrganizationSetting;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -32,8 +33,37 @@ class OrganizationSettingResource extends Resource
     {
         return $schema
             ->components([
+                Section::make('Branding Aplikasi')
+                    ->description('Nama dan aset visual yang tampil pada panel deployment ini.')
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->schema([
+                        TextInput::make('app_name')
+                            ->label('Nama web/aplikasi')
+                            ->placeholder('Contoh: Summary atau Teripang')
+                            ->required()
+                            ->maxLength(100)
+                            ->columnSpanFull(),
+                        FileUpload::make('logo_path')
+                            ->label('Logo aplikasi')
+                            ->helperText('JPEG, PNG, atau WebP. Maksimal 2 MB.')
+                            ->disk('public')
+                            ->directory('organisasi')
+                            ->visibility('public')
+                            ->image()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(2048),
+                        FileUpload::make('favicon_path')
+                            ->label('Favicon')
+                            ->helperText('Gunakan gambar persegi JPEG, PNG, atau WebP. Maksimal 2 MB.')
+                            ->disk('public')
+                            ->directory('organisasi')
+                            ->visibility('public')
+                            ->image()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(2048),
+                    ]),
                 Section::make('Identitas Organisasi')
-                    ->description('Identitas publik deployment ini. Konfigurasi teknis tetap dikelola melalui .env.')
+                    ->description('Identitas organisasi yang mengoperasikan deployment ini.')
                     ->columns(['default' => 1, 'md' => 2])
                     ->schema([
                         TextInput::make('name')
@@ -45,14 +75,6 @@ class OrganizationSettingResource extends Resource
                             ->label('Nama singkat')
                             ->required()
                             ->maxLength(100),
-                        FileUpload::make('logo_path')
-                            ->label('Logo')
-                            ->disk('public')
-                            ->directory('organisasi')
-                            ->visibility('public')
-                            ->image()
-                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                            ->maxSize(2048),
                         Textarea::make('address')
                             ->label('Alamat')
                             ->maxLength(2000)
@@ -63,6 +85,21 @@ class OrganizationSettingResource extends Resource
                             ->default(false)
                             ->columnSpanFull(),
                     ]),
+                Section::make('Perilaku Penyelenggara')
+                    ->description('Berlaku saat Keterlibatan ditandai sebagai organisasi penyelenggara/internal.')
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->schema([
+                        TextInput::make('organizer_name')
+                            ->label('Nama default Penyelenggara')
+                            ->helperText('Jika kosong, sistem memakai Nama singkat organisasi.')
+                            ->maxLength(255),
+                        Select::make('organizer_input_mode')
+                            ->label('Cara pengisian Penyelenggara')
+                            ->options(OrganizationSetting::organizerInputModeOptions())
+                            ->default(OrganizationSetting::ORGANIZER_MODE_LOCKED)
+                            ->required()
+                            ->native(false),
+                    ]),
             ]);
     }
 
@@ -71,6 +108,7 @@ class OrganizationSettingResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->label('Organisasi'),
+                TextColumn::make('app_name')->label('Nama aplikasi'),
                 TextColumn::make('short_name')->label('Nama singkat'),
                 IconColumn::make('monev_enabled')->label('Monev')->boolean(),
             ])

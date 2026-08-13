@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Involvement;
+use App\Models\OrganizationSetting;
 use App\Models\Report;
 use App\Models\User;
 use App\Models\WorkUnit;
@@ -191,11 +192,52 @@ class ReportOrganizationDimensionsTest extends TestCase
         $this->assertNull($involvement->organizerName());
     }
 
-    private function createReport(?int $involvementId = null): int
+    public function test_editable_internal_organizer_preserves_custom_value_and_defaults_blank_value(): void
     {
-        return DB::table('reports')->insertGetId($this->reportAttributes([
+        OrganizationSetting::query()->create([
+            'name' => 'Balai Pengelolaan Kelautan Kupang',
+            'short_name' => 'BPK Kupang',
+            'organizer_name' => 'Balai PK Kupang',
+            'organizer_input_mode' => OrganizationSetting::ORGANIZER_MODE_EDITABLE,
+        ]);
+        $internal = Involvement::query()->create([
+            'name' => 'Internal',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => true,
+        ]);
+
+        $custom = Report::query()->findOrFail($this->createReport($internal->id, 'Mitra Kegiatan'));
+        $defaulted = Report::query()->findOrFail($this->createReport($internal->id, ''));
+
+        $this->assertSame('Mitra Kegiatan', $custom->penyelenggara);
+        $this->assertSame('Balai PK Kupang', $defaulted->penyelenggara);
+    }
+
+    public function test_manual_internal_organizer_never_overwrites_user_input(): void
+    {
+        OrganizationSetting::query()->create([
+            'name' => 'Balai Pengelolaan Kelautan Kupang',
+            'short_name' => 'BPK Kupang',
+            'organizer_name' => 'Balai PK Kupang',
+            'organizer_input_mode' => OrganizationSetting::ORGANIZER_MODE_MANUAL,
+        ]);
+        $internal = Involvement::query()->create([
+            'name' => 'Internal',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => true,
+        ]);
+
+        $report = Report::query()->findOrFail($this->createReport($internal->id, 'Penyelenggara Manual'));
+
+        $this->assertSame('Penyelenggara Manual', $report->penyelenggara);
+    }
+
+    private function createReport(?int $involvementId = null, string $organizer = 'LPRL Sorong'): int
+    {
+        return Report::query()->create($this->reportAttributes([
             'involvement_id' => $involvementId,
-        ]));
+            'penyelenggara' => $organizer,
+        ]))->id;
     }
 
     private function reportAttributes(array $overrides = []): array

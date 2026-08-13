@@ -13,13 +13,32 @@ class OrganizationSetting extends Model
 
     public const DEFAULT_KEY = 'default';
 
+    public const ORGANIZER_MODE_LOCKED = 'locked';
+
+    public const ORGANIZER_MODE_EDITABLE = 'editable';
+
+    public const ORGANIZER_MODE_MANUAL = 'manual';
+
     protected $fillable = [
+        'app_name',
         'name',
         'short_name',
         'logo_path',
+        'favicon_path',
         'address',
+        'organizer_name',
+        'organizer_input_mode',
         'monev_enabled',
     ];
+
+    public static function organizerInputModeOptions(): array
+    {
+        return [
+            self::ORGANIZER_MODE_LOCKED => 'Otomatis dan dikunci',
+            self::ORGANIZER_MODE_EDITABLE => 'Otomatis, dapat diubah',
+            self::ORGANIZER_MODE_MANUAL => 'Diisi manual',
+        ];
+    }
 
     protected static function booted(): void
     {

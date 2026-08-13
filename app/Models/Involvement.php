@@ -38,9 +38,21 @@ class Involvement extends Model
 
     public function organizerName(): ?string
     {
+        if (! $this->is_lprl_organizer) {
+            return null;
+        }
+
+        $organization = app(OrganizationContext::class);
+
+        return $organization->organizerInputMode() === OrganizationSetting::ORGANIZER_MODE_MANUAL
+            ? null
+            : $organization->organizerName();
+    }
+
+    public function organizerInputIsLocked(): bool
+    {
         return $this->is_lprl_organizer
-            ? app(OrganizationContext::class)->shortName()
-            : null;
+            && app(OrganizationContext::class)->organizerInputMode() === OrganizationSetting::ORGANIZER_MODE_LOCKED;
     }
 
     public function reports(): HasMany

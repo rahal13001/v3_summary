@@ -37,6 +37,8 @@ class OrganizationDimensionResourcesTest extends TestCase
         $this->assertStringContainsString("Select::make('status')", $source);
         $this->assertStringContainsString('->options(Involvement::statusOptions())', $source);
         $this->assertStringContainsString("Toggle::make('is_lprl_organizer')", $source);
+        $this->assertStringNotContainsString("->label('LPRL sebagai penyelenggara')", $source);
+        $this->assertStringContainsString('organizerInputIsLocked()', file_get_contents(base_path('app/Filament/Resources/ReportResource.php')));
         $this->assertStringContainsString("SelectFilter::make('status')", $source);
         $this->assertMatchesRegularExpression('/protected static string\s*\|\s*\\\\UnitEnum\s*\|\s*null \$navigationGroup = \'Admin Area\'/', $source);
     }

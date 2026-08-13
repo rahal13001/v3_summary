@@ -86,7 +86,7 @@ class ReportResourceFormTest extends TestCase
         $this->assertMatchesRegularExpression("/Select::make\('involvement_id'\).*?->live\(\).*?->afterStateUpdated\(/s", $source);
         $this->assertStringContainsString('->afterStateHydrated(', $source);
         $this->assertStringContainsString("\$set('penyelenggara', \$involvement?->organizerName())", $source);
-        $this->assertMatchesRegularExpression("/TextInput::make\('penyelenggara'\).*?->readOnly\(.*?is_lprl_organizer.*?\).*?->required\(\)/s", $source);
+        $this->assertMatchesRegularExpression("/TextInput::make\('penyelenggara'\).*?->readOnly\(.*?organizerInputIsLocked\(\).*?\).*?->required\(\)/s", $source);
     }
 
     public function test_report_detail_and_filters_expose_organization_dimensions(): void

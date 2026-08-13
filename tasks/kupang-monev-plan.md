@@ -37,7 +37,8 @@ Summary dijalankan sebagai dua deployment dan dua database terpisah untuk Sorong
 
 ```text
 OrganizationSetting (singleton per database)
-  - name, short_name, logo, address, monev_enabled
+  - app_name, name, short_name, logo_path, favicon_path, address
+  - organizer_name, organizer_input_mode, monev_enabled
 
 User
   - nip, jabatan, coordinator_signature_path
@@ -119,7 +120,7 @@ Skema dan audit Evaluasi
 **Description:** Tambahkan penyimpanan singleton, service pembaca setting, halaman Filament, dan feature flag Monev. Ganti hardcode organisasi pada alur baru melalui service tersebut tanpa mengubah kontrak API/SSO.
 
 **Acceptance criteria:**
-- Admin dapat menyimpan nama, singkatan, logo, alamat, dan status Monev.
+- Admin dapat menyimpan nama aplikasi, nama/singkatan organisasi, logo, favicon, kebijakan Penyelenggara, alamat, dan status Monev.
 - Instalasi Sorong default Monev nonaktif; Kupang dapat mengaktifkannya lewat setting.
 - Setting kosong mempunyai fallback aman dan tidak memutus panel.
 
@@ -135,7 +136,7 @@ Skema dan audit Evaluasi
 
 **Acceptance criteria:**
 - Sorong tetap menghasilkan `LPRL Sorong` dari setting Sorong.
-- Kupang menghasilkan nama organisasi Kupang dan dapat memakai master Internal/Eksternal.
+- Kupang menghasilkan nama organisasi Kupang, dapat memakai master Internal/Eksternal, dan dapat memilih mode Penyelenggara editable/manual.
 - Tidak ada perbandingan nama keterlibatan untuk menentukan kategori.
 
 **Verification:** regression tests organisasi Sorong/Kupang dan existing Report organization tests.

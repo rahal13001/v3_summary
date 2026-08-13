@@ -1,140 +1,65 @@
-# Implementation Plan: Unit Kerja dan Keterlibatan Laporan
+# Implementation Plan: Branding Organisasi dan Perilaku Keterlibatan
 
 ## Overview
 
-Implementasi mengikuti spesifikasi `docs/specs/UNIT_KERJA_KETERLIBATAN.md`. Pekerjaan dibagi menjadi irisan vertikal kecil: fondasi data, master admin, integrasi Report, keluaran, lalu dokumentasi dan verifikasi. Semua perubahan skema bersifat aditif. Semua test database memakai SQLite in-memory.
+Implementasi mengikuti `docs/specs/ORGANIZATION_BRANDING_AND_INVOLVEMENT.md` dengan migration aditif dan fallback yang mempertahankan perilaku Sorong. Nama Keterlibatan tetap dikelola pada master Keterlibatan; Pengaturan Organisasi mengelola branding dan kebijakan pengisian Penyelenggara.
 
 ## Architecture Decisions
 
-- `work_units` menjadi master kantor terpisah dari `teams`.
-- `report_work_unit` menyimpan relasi many-to-many dengan unique composite untuk mencegah duplikasi.
-- `involvements` menjadi master fleksibel; `is_lprl_organizer` mengendalikan perilaku Penyelenggara tanpa pencocokan nama.
-- `reports.involvement_id` nullable menjaga kompatibilitas 2.438+ laporan historis.
-- Validasi wajib diterapkan pada form create/edit, bukan constraint `NOT NULL`, karena data lama boleh kosong.
-- Master terpakai dilindungi dari penghapusan; status nonaktif menjadi mekanisme penghentian pemakaian.
-- Resource baru mengikuti 12 permission standar Filament Shield per resource.
-- Opsi status dan kategori dipusatkan pada model untuk mencegah perbedaan antara form, filter, dan tampilan.
+- Pisahkan nama web (`app_name`) dari nama/singkatan organisasi.
+- Pertahankan `logo_path` untuk kompatibilitas, tambahkan `favicon_path`.
+- Simpan kebijakan Penyelenggara pada singleton organisasi karena berlaku konsisten untuk seluruh Keterlibatan internal deployment.
+- Pertahankan `is_lprl_organizer` sebagai kolom legacy/stable flag untuk Monev; generalisasi hanya pada label UI dan accessor domain.
+- Gunakan `OrganizationContext` sebagai satu-satunya pintu akses konfigurasi dan fallback `.env`.
 
 ## Dependency Graph
 
 ```text
 Migration aditif
-    ├── Model dan relasi
-    │   ├── Resource admin Unit Kerja
-    │   ├── Resource admin Keterlibatan
-    │   └── Integrasi ReportResource
-    │       ├── Detail dan filter Report
-    │       ├── Excel
-    │       └── PDF
-    └── Seeder Keterlibatan awal
+    -> OrganizationSetting + OrganizationContext
+        -> Pengaturan Organisasi
+        -> AdminPanelProvider branding
+        -> Involvement/Report enforcement
+            -> ReportResource interaction
+                -> browser verification
 
-Resource admin
-    └── Policy dan katalog permission Shield
-
-Semua irisan
-    └── Dokumentasi dan full verification
+Semua irisan -> dokumentasi -> full quality gates -> review -> commit
 ```
 
 ## Task List
 
-### Phase 1: Data Foundation
+### Phase 1: Configuration Foundation
 
-- [x] Task 1: Tambahkan regression test skema lalu migration aditif.
-  - Acceptance: tabel `work_units`, `involvements`, `report_work_unit`, dan nullable `reports.involvement_id` tersedia; pivot unik; foreign key delete rules sesuai spesifikasi.
-  - Verify: `php artisan test tests/Feature/ReportOrganizationDimensionsTest.php --filter=schema`.
-  - Files: satu migration baru, satu test feature.
+- [x] Tambahkan test schema, fallback, dan override branding/perilaku.
+- [x] Tambahkan migration aditif serta field/model/context baru.
+- [x] Verifikasi focused OrganizationSettings tests.
 
-- [x] Task 2: Tambahkan model, relasi, konstanta opsi, dan seeder awal.
-  - Acceptance: Eloquent Report–Unit Kerja dan Report–Keterlibatan bekerja; seeder idempotent menyediakan Penyelenggara dan Peserta.
-  - Verify: `php artisan test tests/Feature/ReportOrganizationDimensionsTest.php --filter='relationship|seed'`.
-  - Files: `WorkUnit.php`, `Involvement.php`, `Report.php`, `InvolvementSeeder.php`, test feature.
+### Phase 2: Admin and Report Workflow
 
-### Checkpoint: Data Foundation
+- [x] Tambahkan field branding dan kebijakan Penyelenggara pada resource organisasi.
+- [x] Generalisasi label resource Keterlibatan tanpa mengubah flag database.
+- [x] Terapkan mode locked/editable/manual pada model dan form Report.
+- [x] Verifikasi focused resource/model/form tests.
 
-- [x] Focused schema/model tests lulus.
-- [x] Migration rollback tervalidasi pada SQLite in-memory.
-- [x] Tidak ada data Report lama yang diisi atau ditebak.
+### Phase 3: Documentation and Verification
 
-### Phase 2: Admin Master Data
-
-- [x] Task 3: Bangun resource Unit Kerja.
-  - Acceptance: admin dapat list/create/edit Unit Kerja; tiga kategori tetap; status aktif/nonaktif; pencarian dan filter tersedia; record terpakai tidak dapat dihapus.
-  - Verify: focused resource contract test dan panel smoke test.
-  - Files: `WorkUnitResource.php`, tiga page resource, test feature.
-
-- [x] Task 4: Bangun resource Keterlibatan.
-  - Acceptance: admin dapat list/create/edit Keterlibatan; toggle LPRL organizer tersedia; status dan pencarian/filter tersedia; record terpakai tidak dapat dihapus.
-  - Verify: focused resource contract test dan panel smoke test.
-  - Files: `InvolvementResource.php`, tiga page resource, test feature.
-
-- [x] Task 5: Tambahkan authorization Shield.
-  - Acceptance: dua policy baru memakai permission standar; katalog Shield bertambah tepat 24 permission tanpa mengubah format permission lama.
-  - Verify: `php artisan test tests/Feature/ShieldPermissionContractTest.php`.
-  - Files: dua policy, Shield contract test.
-
-### Checkpoint: Admin Master Data
-
-- [x] Resource terdeteksi panel dan dilindungi policy.
-- [x] Test resource dan permission lulus.
-- [x] Master aktif/nonaktif bekerja tanpa hard-coded name behavior.
-
-### Phase 3: Report Workflow
-
-- [x] Task 6: Integrasikan Unit Kerja dan Keterlibatan pada ReportResource.
-  - Acceptance: create/edit wajib satu Keterlibatan dan minimal satu Unit Kerja; pilihan hanya master aktif; perubahan Keterlibatan mengisi atau membersihkan Penyelenggara sesuai flag; detail dan filter menampilkan dimensi baru.
-  - Verify: focused form behavior dan resource contract tests.
-  - Files: `ReportResource.php`, `ReportResourceFormTest.php`, organization-dimensions test.
-
-- [x] Task 7: Jaga kompatibilitas laporan historis.
-  - Acceptance: laporan tanpa Keterlibatan/Unit Kerja tetap dapat dilihat; edit meminta pengisian; nilai master nonaktif yang sudah terhubung tetap tampil.
-  - Verify: focused historical compatibility tests.
-  - Files: `ReportResource.php`, organization-dimensions test.
-
-### Checkpoint: Report Workflow
-
-- [x] Focused Report tests lulus.
-- [x] Tim Kerja dan state path `teams` tetap berfungsi.
-- [x] Transisi Penyelenggara internal/eksternal teruji dua arah.
-
-### Phase 4: Output and Documentation
-
-- [x] Task 8: Tambahkan dimensi baru ke Excel.
-  - Acceptance: export eager-load relasi baru dan memuat kolom Unit Kerja serta Keterlibatan tanpa query per baris.
-  - Verify: focused export mapping/query test.
-  - Files: `ReportsExport.php`, export test.
-
-- [x] Task 9: Tambahkan dimensi baru ke PDF.
-  - Acceptance: PDF menampilkan Unit Kerja, Keterlibatan, dan Penyelenggara; laporan historis null dirender aman.
-  - Verify: focused PDF render/layout test.
-  - Files: `PdfController.php`, `pdf.blade.php`, PDF test.
-
-- [x] Task 10: Perbarui dokumentasi sistem.
-  - Acceptance: PRD, ERD, dan data/storage docs mencerminkan tabel, relasi, validasi, dan kompatibilitas historis baru.
-  - Verify: review diff dokumentasi terhadap migration/model final.
-  - Files: tiga dokumen `docs/`.
-
-### Checkpoint: Complete
-
-- [x] `php artisan test` lulus pada SQLite in-memory.
-- [x] `vendor/bin/pint --dirty` lulus.
-- [x] `composer dump-autoload --strict-psr` lulus.
-- [x] `npm run build` lulus.
-- [x] `git diff --check` bersih.
-- [x] Review correctness, security, maintainability, performance, compatibility, dan accessibility selesai.
-- [x] Tidak ada migration atau seed dijalankan terhadap database aplikasi.
+- [x] Perbarui PRD, ERD, storage/deployment runbook, `.env.example`, dan ADR.
+- [x] Jalankan formatter, full tests, strict PSR autoload, frontend build, dan diff check.
+- [x] Jalankan browser smoke test branding publik; verifikasi UI admin/Report dilengkapi automated resource tests karena browser tidak memiliki sesi login.
+- [x] Review correctness, security, compatibility, performance, maintainability, dan accessibility.
+- [x] Buat commit atomik tanpa push.
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Test mengenai database aplikasi | Critical | PHPUnit memaksa SQLite `:memory:` dan bootstrap menolak koneksi lain. |
-| Field disabled tidak tersimpan oleh Filament | High | Gunakan state yang tetap didehidrasi atau read-only; buktikan dengan component/form test. |
-| Master nonaktif hilang dari edit laporan lama | Medium | Query opsi mempertahankan nilai yang sudah dipilih sambil mencegah pilihan baru. |
-| Delete master menghilangkan histori | High | FK restrict dan action delete dinonaktifkan saat relation count lebih dari nol. |
-| Resource baru mengubah katalog permission | Medium | Update kontrak dari 71 menjadi 95 dan verifikasi tepat 12 permission per resource. |
-| Relasi baru menambah N+1 pada export/PDF | Medium | Eager-load `workUnits` dan `involvement`; tambah regression test query/mapping. |
-| PDF layout melebar karena daftar Unit Kerja | Low | Tampilkan sebagai teks gabungan dengan wrapping yang sudah ada. |
+| Record lama tidak memiliki field baru | High | Kolom nullable/default locked dan fallback `OrganizationContext`. |
+| Logo/favikon aktif tidak ditemukan | Medium | Cek keberadaan public disk sebelum menghasilkan URL; fallback asset lama. |
+| Mode editable ditimpa saat save | High | Model hanya memberi default jika nilai kosong; test nilai kustom. |
+| Client memanipulasi mode locked | High | Enforcement pada event `Report::saving`. |
+| Label Keterlibatan dan konfigurasi organisasi menjadi duplikat | Medium | Label tetap hanya di `involvements.name`. |
+| Upload active content | High | MIME allowlist JPEG/PNG/WebP, batas 2 MB, tanpa SVG. |
 
 ## Open Questions
 
-Tidak ada. Spesifikasi dan asumsi teknis telah disetujui pengguna.
+Tidak ada.

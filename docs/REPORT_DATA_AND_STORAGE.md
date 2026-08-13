@@ -23,7 +23,7 @@ These results do not justify clearing database paths automatically. A path can s
 7. Existing many-to-many report fields use the relationship state paths `followers`, `indicators`, and `teams`.
 8. `workUnits` is a separate many-to-many relationship and must not replace or reuse `teams`.
 9. Historical reports may have `involvement_id = null` and no `report_work_unit` rows. Viewing them must remain safe; editing requires the new fields.
-10. A report with an involvement flagged `is_lprl_organizer` always persists the current organization short name as `penyelenggara`, including when a client tampers with the read-only field.
+10. A report with an involvement flagged `is_lprl_organizer` follows the deployment's organizer mode: `locked` enforces the configured organizer name server-side, `editable` defaults only an empty value, and `manual` never supplies a value. Unflagged involvements always remain manual.
 11. PDF and Excel eager-load `workUnits` and `involvement` so the new output does not introduce per-row relationship queries.
 
 ## Deployment of organization dimensions
@@ -42,11 +42,11 @@ The migration is additive. It leaves historical reports with `involvement_id = n
 
 The Kupang adoption adds three additive migration groups:
 
-1. `organization_settings` stores deployment identity, public logo path, address, and the Monev flag. The flag defaults to false, preserving Sorong behavior.
+1. `organization_settings` stores the application name, organization identity, public logo/favicon paths, organizer name/input mode, address, and Monev flag. The organizer mode defaults to `locked` and Monev defaults to false, preserving Sorong behavior.
 2. `users.coordinator_signature_path` and `work_unit_coordinators` store private signature paths and non-overlapping assignment history.
 3. `report_evaluations` and `report_evaluation_revisions` store monthly content and append-only field diffs.
 
-Coordinator signatures use the `local` disk under `storage/app/coordinator-signatures`; they must not be exposed through `public-storage`. Validate JPEG/PNG (the workbook drawing formats supported by this deployment), keep each deployment's storage separate, and back up it together with that deployment's database. Organization logos remain on the `public` disk.
+Coordinator signatures use the `local` disk under `storage/app/coordinator-signatures`; they must not be exposed through `public-storage`. Validate JPEG/PNG (the workbook drawing formats supported by this deployment), keep each deployment's storage separate, and back up it together with that deployment's database. Organization logos and favicons remain on the `public` disk, accept only JPEG/PNG/WebP up to 2 MB, and are resolved only when the file exists.
 
 Evidence links are JSON arrays containing only validated HTTP/HTTPS URLs. Evaluations do not duplicate Report files and do not change public PDF output. The Monev workbook converts rich text to plain text, neutralizes formula prefixes, and embeds the currently active coordinator's private signature.
 

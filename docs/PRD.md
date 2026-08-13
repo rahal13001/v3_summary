@@ -1,18 +1,18 @@
 # Product Requirements Document — Summary
 
-> Pembaruan 12 Agustus 2026: satu source mendukung deployment Sorong dan Kupang yang terpisah. Identitas organisasi berasal dari Pengaturan Organisasi; Evaluasi Monev digate dan default-nya nonaktif.
+> Pembaruan 13 Agustus 2026: satu source mendukung deployment Sorong dan Kupang yang terpisah. Nama aplikasi, logo, favicon, identitas organisasi, dan perilaku Penyelenggara berasal dari Pengaturan Organisasi; Evaluasi Monev digate dan default-nya nonaktif.
 
 ## 1. Status Dokumen
 
 - Jenis: dokumentasi produk **as-is**
-- Tanggal pembaruan: 11 Agustus 2026
+- Tanggal pembaruan: 13 Agustus 2026
 - Sumber kebenaran: source code aplikasi, migration, model Eloquent, resource Filament, route, controller, command terjadwal, dan dependency manifest
 - Cakupan: aplikasi inti; source vendor, cache, log, dan hasil build tidak dianalisis sebagai logika bisnis
 - Catatan: dokumen ini tidak menetapkan perubahan atau desain versi berikutnya
 
 ## 2. Ringkasan Produk
 
-Summary adalah aplikasi internal berbasis Laravel dan Filament untuk mencatat, mengelola, menyajikan, dan menganalisis laporan kegiatan dengan format 5W1H. Laporan dapat dikaitkan dengan penyusun, pengikut, indikator kinerja (IKU), tim kerja, Unit Kerja organisasi aktif, jenis keterlibatan, dokumentasi, surat tugas, dan tanda tangan.
+Aplikasi ini adalah platform internal berbasis Laravel dan Filament untuk mencatat, mengelola, menyajikan, dan menganalisis laporan kegiatan dengan format 5W1H. Deployment dapat memakai nama web berbeda, misalnya Summary di Sorong dan Teripang di Kupang. Laporan dapat dikaitkan dengan penyusun, pengikut, indikator kinerja (IKU), tim kerja, Unit Kerja organisasi aktif, jenis keterlibatan, dokumentasi, surat tugas, dan tanda tangan.
 
 Aplikasi juga memiliki modul disposisi/order untuk menugaskan pekerjaan kepada satu atau lebih pelaksana. Pelaksana dapat mencatat status, bukti, deskripsi, tugas, dan menghubungkan hasilnya ke laporan Summary. Pengingat diberikan melalui email dan Firebase Cloud Messaging (FCM).
 
@@ -112,10 +112,19 @@ Perilaku utama:
 - Setiap Unit Kerja mempunyai nama, status aktif/nonaktif, dan kategori tetap: Satuan Pelayanan, Wilayah Kerja, atau Gerai Pelayanan.
 - Report dan Unit Kerja berelasi many-to-many melalui `report_work_unit`.
 - Keterlibatan adalah master fleksibel untuk posisi organisasi aktif pada kegiatan, misalnya Penyelenggara, Peserta, Sponsor, atau Pemberi Modal.
-- Penanda `is_lprl_organizer` menentukan apakah Penyelenggara diisi otomatis dari singkatan Pengaturan Organisasi. Nama kolom legacy dipertahankan untuk kompatibilitas.
+- Penanda `is_lprl_organizer` menentukan apakah kebijakan Penyelenggara organisasi diterapkan. Nama kolom legacy dipertahankan untuk kompatibilitas dan label UI digeneralisasi.
+- Pengaturan Organisasi menentukan nama default Penyelenggara dan mode `locked`, `editable`, atau `manual`. Mode `locked` dipaksa server-side; `editable` hanya memberi default pada nilai kosong; `manual` tidak mengisi otomatis.
+- Nama Keterlibatan bebas per deployment, termasuk Penyelenggara/Peserta atau Internal/Eksternal, tanpa pencocokan teks pada domain logic.
 - Master yang sudah digunakan tidak dihapus; admin menonaktifkannya agar histori tetap utuh.
 
-### 5.7 Dashboard analitik
+### 5.7 Branding dan identitas deployment
+
+- `app_name` adalah nama web/aplikasi dan terpisah dari nama serta singkatan organisasi.
+- Logo panel dan favicon dapat diunggah per deployment dalam format JPEG, PNG, atau WebP, maksimal 2 MB; SVG tidak diterima.
+- Aset hanya dipakai bila masih tersedia pada public disk. Jika kosong atau hilang, panel dan email menggunakan aset Summary bawaan.
+- Seluruh pembacaan setting menggunakan `OrganizationContext`, dengan fallback `.env`, tanpa kondisi berdasarkan kota atau domain.
+
+### 5.8 Dashboard analitik
 
 Dashboard mendukung filter tanggal mulai dan tanggal selesai, lalu menampilkan:
 
@@ -129,7 +138,7 @@ Dashboard mendukung filter tanggal mulai dan tanggal selesai, lalu menampilkan:
 
 Tanggal analisis menggunakan kolom kegiatan `reports.when`, bukan tanggal pembuatan record.
 
-### 5.8 PDF, QR, tanda tangan, dan tampilan publik
+### 5.9 PDF, QR, tanda tangan, dan tampilan publik
 
 - Route `/pdf/{report}` menghasilkan PDF streaming berdasarkan slug laporan.
 - PDF menyertakan QR menuju laporan, surat tugas, dan dokumentasi lain.
@@ -138,13 +147,13 @@ Tanggal analisis menggunakan kolom kegiatan `reports.when`, bukan tanggal pembua
 - Route public storage melayani file dari disk public melalui controller khusus.
 - Halaman khusus tersedia untuk melihat surat tugas dan dokumentasi lainnya.
 
-### 5.9 Ekspor Excel
+### 5.10 Ekspor Excel
 
 Ekspor laporan terpilih memuat penyusun, pengikut, nomor ST, 5W1H, IKU, tim, Unit Kerja, Keterlibatan, Penyelenggara, peserta, dan persentase wanita. Isi rich text `how` diubah menjadi teks biasa, tanggal diformat `dd-mm-YYYY`, dan lembar menggunakan font Arial serta wrap text.
 
 Ekspor Monev adalah action independen dari pemilihan baris. Pengguna memilih Unit Kerja, bulan, tahun, lokasi, dan tanggal tanda tangan. Dataset memuat Report pada Unit Kerja yang rentangnya overlap periode, atau Report lama yang mempunyai evaluasi pada periode itu. INTERNAL ditentukan oleh `involvements.is_lprl_organizer`; selain itu EKSTERNAL. Excel mengikuti matriks 10 kolom, memakai koordinator aktif dan tanda tangan privat, menetralkan formula, dan membatasi bukti pada HTTP/HTTPS.
 
-### 5.9.1 Evaluasi Monev
+### 5.10.1 Evaluasi Monev
 
 - Satu evaluasi unik untuk kombinasi Report, Unit Kerja, dan periode hari pertama bulan.
 - Field narasi dan daftar URL bersifat nullable; tidak ada record kosong yang dibuat otomatis.
@@ -152,7 +161,7 @@ Ekspor Monev adalah action independen dari pemilihan baris. Pengguna memilih Uni
 - Setiap create/update menyimpan diff append-only pada transaksi yang sama. No-op tidak membuat revision.
 - Action export memerlukan ability `export_report_evaluations`. UI hanya ada bila Pengaturan Organisasi mengaktifkan Monev.
 
-### 5.10 Disposisi/order
+### 5.11 Disposisi/order
 
 Order menyimpan pemberi tugas, tanggal/waktu, tanggal selesai, status, instruksi, catatan, surat, dan slug.
 
@@ -163,7 +172,7 @@ Order menyimpan pemberi tugas, tanggal/waktu, tanggal selesai, status, instruksi
 - Perubahan daftar user mengganti kumpulan executor yang ada.
 - Widget menampilkan ringkasan jumlah order/pelaksana selesai sesuai implementasi resource.
 
-### 5.11 Notifikasi dan pekerjaan terjadwal
+### 5.12 Notifikasi dan pekerjaan terjadwal
 
 | Jadwal | Command | Perilaku |
 |---|---|---|
@@ -171,7 +180,7 @@ Order menyimpan pemberi tugas, tanggal/waktu, tanggal selesai, status, instruksi
 | Setiap hari 08:00 | `app:send-email-reminder` | Mengirim email kepada executor untuk order pada hari tersebut |
 | Setiap hari 02:00 | `app:delete-unused-files` | Menghapus file public yang tidak direferensikan |
 
-### 5.12 Administrasi dan keamanan
+### 5.13 Administrasi dan keamanan
 
 - User, role, permission, IKU, tim, Unit Kerja, Keterlibatan, laporan, dan order dikelola melalui resource Filament.
 - Policy untuk resource utama menggunakan permission Filament Shield.

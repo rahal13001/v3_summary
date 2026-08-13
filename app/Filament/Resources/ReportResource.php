@@ -235,7 +235,7 @@ class ReportResource extends Resource
                                     ? Involvement::query()->find($state)
                                     : null;
 
-                                if ($involvement?->organizerName()) {
+                                if ($involvement?->organizerInputIsLocked()) {
                                     $set('penyelenggara', $involvement->organizerName());
                                 }
                             })
@@ -252,7 +252,7 @@ class ReportResource extends Resource
                                 $involvementId = $get('involvement_id');
 
                                 return filled($involvementId)
-                                    && (bool) Involvement::query()->find($involvementId)?->is_lprl_organizer;
+                                    && (bool) Involvement::query()->find($involvementId)?->organizerInputIsLocked();
                             })
                             ->required()
                             ->label('Penyelenggara')

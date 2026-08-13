@@ -1,23 +1,13 @@
-# Unit Kerja dan Keterlibatan Laporan
+# Branding Organisasi dan Perilaku Keterlibatan
 
-- [x] Tulis failing test untuk skema baru.
-- [x] Tambahkan migration aditif dan buktikan rollback.
-- [x] Tulis failing test untuk relasi dan seed.
-- [x] Tambahkan model WorkUnit, Involvement, relasi Report, dan seeder awal.
-- [x] Verifikasi checkpoint fondasi data.
-- [x] Tulis resource contract test Unit Kerja.
-- [x] Tambahkan WorkUnitResource dan pages.
-- [x] Tulis resource contract test Keterlibatan.
-- [x] Tambahkan InvolvementResource dan pages.
-- [x] Tambahkan policy baru dan update kontrak Shield.
-- [x] Verifikasi checkpoint master admin.
-- [x] Tulis failing test form Report dan transisi Penyelenggara.
-- [x] Integrasikan field, detail, dan filter pada ReportResource.
-- [x] Tambahkan test kompatibilitas Report historis.
-- [x] Verifikasi Tim Kerja tetap berfungsi.
-- [x] Tulis test dan update Excel export.
-- [x] Tulis test dan update PDF.
-- [x] Perbarui PRD, ERD, dan data/storage docs.
-- [x] Jalankan focused tests tiap irisan.
-- [x] Jalankan full PHPUnit, Pint, strict PSR-4, frontend build, dan diff check.
-- [x] Lakukan review multi-axis dan perbaiki temuan dalam scope.
+- [x] Tulis failing test untuk skema dan fallback konfigurasi baru.
+- [x] Tambahkan migration aditif.
+- [x] Implementasikan model dan `OrganizationContext`.
+- [x] Verifikasi checkpoint fondasi konfigurasi.
+- [x] Tulis failing test untuk tiga mode Penyelenggara dan branding panel.
+- [x] Perbarui Pengaturan Organisasi dan panel branding.
+- [x] Generalisasi master Keterlibatan dan form Report.
+- [x] Verifikasi checkpoint workflow laporan.
+- [x] Perbarui dokumentasi dan ADR.
+- [x] Jalankan browser verification dan seluruh quality gate.
+- [x] Review diff dan buat commit tanpa push.

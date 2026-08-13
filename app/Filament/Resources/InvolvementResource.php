@@ -53,8 +53,8 @@ class InvolvementResource extends Resource
                             ->required()
                             ->native(false),
                         Toggle::make('is_lprl_organizer')
-                            ->label('LPRL sebagai penyelenggara')
-                            ->helperText('Jika aktif, Penyelenggara pada laporan otomatis memakai nama organisasi.')
+                            ->label('Organisasi sebagai penyelenggara/internal')
+                            ->helperText('Jika aktif, pengisian Penyelenggara mengikuti kebijakan pada Pengaturan Organisasi.')
                             ->default(false)
                             ->inline(false),
                     ]),
@@ -77,7 +77,7 @@ class InvolvementResource extends Resource
                     ->badge()
                     ->sortable(),
                 IconColumn::make('is_lprl_organizer')
-                    ->label('LPRL Penyelenggara')
+                    ->label('Organisasi Penyelenggara/Internal')
                     ->boolean(),
             ])
             ->defaultSort('name')

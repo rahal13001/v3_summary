@@ -42,7 +42,13 @@ class Report extends Model
 
             $involvement = Involvement::query()->find($report->involvement_id);
 
-            if ($involvement?->is_lprl_organizer) {
+            if ($involvement?->organizerInputIsLocked()) {
+                $report->penyelenggara = $involvement->organizerName();
+
+                return;
+            }
+
+            if ($involvement?->is_lprl_organizer && blank($report->penyelenggara)) {
                 $report->penyelenggara = $involvement->organizerName();
             }
         });

@@ -18,7 +18,7 @@ Pengguna utama adalah admin pengelola referensi dan writer penginput laporan. Fi
 - Laporan lama boleh mempunyai `involvement_id = null` dan tidak mempunyai Unit Kerja sampai diedit.
 - Unit Kerja mempunyai `name`, `status`, dan satu `unit` dari pilihan tetap Satuan Pelayanan, Wilayah Kerja, atau Gerai Pelayanan.
 - Keterlibatan mempunyai `name`, `status`, dan penanda boolean `is_lprl_organizer` agar jenis baru tidak bergantung pada pencocokan nama.
-- Jika Keterlibatan bertanda `is_lprl_organizer`, form mengisi `penyelenggara` dengan singkatan Pengaturan Organisasi dan mencegah perubahan manual. Nama flag legacy dipertahankan untuk kompatibilitas.
+- Jika Keterlibatan bertanda `is_lprl_organizer`, form mengikuti mode Penyelenggara pada Pengaturan Organisasi: `locked`, `editable`, atau `manual`. Nama flag legacy dipertahankan untuk kompatibilitas.
 - Jika Keterlibatan tidak bertanda tersebut, form menghapus nilai otomatis lama lalu mengaktifkan dan mewajibkan input Penyelenggara.
 - Pergantian Keterlibatan selalu membersihkan nilai Penyelenggara yang tidak lagi sesuai.
 
@@ -74,7 +74,7 @@ Seeder menyediakan nilai awal:
 
 - Tambahkan resource Unit Kerja dan Keterlibatan pada grup navigasi `Admin Area`.
 - Form Unit Kerja memakai input nama, pilihan status, dan pilihan tunggal kategori unit.
-- Form Keterlibatan memakai input nama, pilihan status, dan toggle `LPRL sebagai penyelenggara`.
+- Form Keterlibatan memakai input nama, pilihan status, dan toggle `Organisasi sebagai penyelenggara/internal`.
 - Tabel kedua resource dapat dicari dan difilter berdasarkan status; Unit Kerja juga dapat difilter berdasarkan kategori.
 - Master yang masih dipakai laporan tidak boleh dihapus. Admin menonaktifkannya untuk menghentikan pemakaian baru.
 - Resource mengikuti policy dan permission Filament Shield yang berlaku pada resource bisnis lain.

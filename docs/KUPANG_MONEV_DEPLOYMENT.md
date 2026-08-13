@@ -15,10 +15,12 @@ Gunakan satu revision source code, tetapi dua deployment yang sepenuhnya terpisa
 | `CACHE_PREFIX` | Prefix unik Sorong | Prefix unik Kupang |
 | `SESSION_COOKIE` | Cookie unik Sorong | Cookie unik Kupang |
 | `QUEUE_CONNECTION` / namespace worker | Worker Sorong | Worker Kupang |
-| `ORGANIZATION_*` fallback | Identitas Sorong | Identitas Kupang |
-| `ORGANIZATION_MONEV_ENABLED` fallback | `false` | `false` saat rollout; aktifkan dari menu setelah verifikasi |
+| `ORGANIZATION_APP_NAME` fallback | `Summary` | `Teripang` |
+| `ORGANIZATION_*` fallback | Identitas LPRL Sorong | Identitas Balai PK Kupang |
+| `ORGANIZATION_ORGANIZER_INPUT_MODE` | `locked` | `editable` atau `manual`, sesuai kebijakan |
+| `MONEV_ENABLED` fallback | `false` | `false` saat rollout; aktifkan dari menu setelah verifikasi |
 
-Nilai pada Pengaturan Organisasi mengoverride fallback `ORGANIZATION_*`. Pastikan Redis/database cache, session, dan queue juga memakai database/prefix berbeda bila infrastrukturnya satu host.
+Nilai pada Pengaturan Organisasi mengoverride fallback `.env`. `ORGANIZATION_ORGANIZER_INPUT_MODE` hanya menerima `locked`, `editable`, atau `manual`; nilai lain diperlakukan sebagai `locked`. Pastikan Redis/database cache, session, dan queue juga memakai database/prefix berbeda bila infrastrukturnya satu host.
 
 ## Rollout aman
 
@@ -26,8 +28,8 @@ Nilai pada Pengaturan Organisasi mengoverride fallback `ORGANIZATION_*`. Pastika
 2. Deploy source pada maintenance window. Jangan menjalankan `migrate:fresh`, `migrate:refresh`, `db:wipe`, atau seed yang menebak relasi historis.
 3. Jalankan `php artisan migrate --force`. Migration hanya menambah tabel/kolom/indeks.
 4. Jalankan `php artisan optimize:clear`, lalu restart worker queue deployment itu saja.
-5. Di Pengaturan Organisasi, isi nama, singkatan, logo, dan alamat. Biarkan Monev nonaktif.
-6. Pastikan master Unit Kerja dan flag Keterlibatan benar. Kategori export tidak memakai pembandingan nama.
+5. Di Pengaturan Organisasi, isi nama aplikasi, nama/singkatan organisasi, logo, favicon, nama default Penyelenggara, cara pengisian Penyelenggara, dan alamat. Biarkan Monev nonaktif.
+6. Pastikan master Unit Kerja dan flag organisasi penyelenggara/internal pada Keterlibatan benar. Nama master bebas, misalnya Penyelenggara/Peserta atau Internal/Eksternal; kategori export tidak memakai pembandingan nama.
 7. Tetapkan Koordinator berperiode pada setiap Unit Kerja yang akan diekspor. Lengkapi nama, NIP, jabatan, dan tanda tangan JPEG/PNG.
 8. Berikan permission `manage_all_report_evaluations` kepada pimpinan yang memerlukan akses global dan `export_report_evaluations` kepada pelaksana export. Role admin/super-admin tetap mengikuti policy existing.
 9. Jalankan smoke test Report lama, Excel lama, PDF publik, tambah/edit/riwayat evaluasi, dan satu export Monev.
@@ -42,6 +44,8 @@ Nilai pada Pengaturan Organisasi mengoverride fallback `ORGANIZATION_*`. Pastika
 - Koordinator hanya melihat unit aktifnya; owner/follower dan akses global sesuai policy.
 - Export Monev memuat Report overlap atau evaluasi periode, tidak tergantung checkbox, dan Excel lama/PDF tidak berubah.
 - File tanda tangan ada pada disk privat deployment dan tidak tersedia melalui URL publik.
+- Nama aplikasi, logo, dan favicon berasal dari deployment aktif; aset yang hilang jatuh kembali ke aset Summary bawaan tanpa error.
+- Pada Sorong, mode `locked` memaksa nama LPRL Sorong. Pada Kupang, mode `editable` memberi saran namun menerima nama lain, sedangkan `manual` tidak mengisi otomatis.
 
 ## Rollback
 
