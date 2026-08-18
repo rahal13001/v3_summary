@@ -216,15 +216,8 @@ class ReportResource extends Resource
                             ->relationship(
                                 name: 'involvement',
                                 titleAttribute: 'name',
-                                modifyQueryUsing: function (Builder $query, ?Report $record): Builder {
-                                    return $query->where(function (Builder $query) use ($record): void {
-                                        $query->where('status', Involvement::STATUS_ACTIVE);
-
-                                        if ($record?->involvement_id) {
-                                            $query->orWhereKey($record->involvement_id);
-                                        }
-                                    });
-                                },
+                                modifyQueryUsing: fn (Builder $query, ?Report $record): Builder => $query
+                                    ->selectableForReport($record?->involvement_id),
                             )
                             ->label('Keterlibatan')
                             ->preload()

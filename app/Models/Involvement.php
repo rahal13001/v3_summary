@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\OrganizationContext;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -34,6 +35,17 @@ class Involvement extends Model
             self::STATUS_ACTIVE => 'Aktif',
             self::STATUS_INACTIVE => 'Tidak Aktif',
         ];
+    }
+
+    public function scopeSelectableForReport(Builder $query, ?int $selectedId): Builder
+    {
+        return $query->where(function (Builder $query) use ($selectedId): void {
+            $query->where('status', self::STATUS_ACTIVE);
+
+            if ($selectedId !== null) {
+                $query->orWhere($query->getModel()->getQualifiedKeyName(), $selectedId);
+            }
+        });
     }
 
     public function organizerName(): ?string

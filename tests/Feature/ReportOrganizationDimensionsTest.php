@@ -132,6 +132,36 @@ class ReportOrganizationDimensionsTest extends TestCase
         $this->assertTrue($involvement->reports->contains($report));
     }
 
+    public function test_selectable_involvements_include_active_and_current_inactive_records(): void
+    {
+        $active = Involvement::query()->create([
+            'name' => 'Internal',
+            'status' => Involvement::STATUS_ACTIVE,
+            'is_lprl_organizer' => true,
+        ]);
+        $currentInactive = Involvement::query()->create([
+            'name' => 'Keterlibatan Lama',
+            'status' => Involvement::STATUS_INACTIVE,
+            'is_lprl_organizer' => false,
+        ]);
+        $otherInactive = Involvement::query()->create([
+            'name' => 'Tidak Tersedia',
+            'status' => Involvement::STATUS_INACTIVE,
+            'is_lprl_organizer' => false,
+        ]);
+
+        $selectableIds = Involvement::query()
+            ->selectableForReport($currentInactive->id)
+            ->pluck('id')
+            ->all();
+
+        $this->assertEqualsCanonicalizing([
+            $active->id,
+            $currentInactive->id,
+        ], $selectableIds);
+        $this->assertNotContains($otherInactive->id, $selectableIds);
+    }
+
     public function test_master_options_use_stable_codes_and_indonesian_labels(): void
     {
         $this->assertSame([

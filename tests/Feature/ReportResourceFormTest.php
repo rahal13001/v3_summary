@@ -83,6 +83,8 @@ class ReportResourceFormTest extends TestCase
         $this->assertMatchesRegularExpression("/Select::make\('workUnits'\).*?->multiple\(\).*?->minItems\(1\).*?->required\(\)/s", $source);
         $this->assertStringContainsString("Select::make('involvement_id')", $source);
         $this->assertStringContainsString("->relationship('involvement', 'name'", $source);
+        $this->assertStringContainsString('->selectableForReport(', $source);
+        $this->assertStringNotContainsString('->orWhereKey(', $source);
         $this->assertMatchesRegularExpression("/Select::make\('involvement_id'\).*?->live\(\).*?->afterStateUpdated\(/s", $source);
         $this->assertStringContainsString('->afterStateHydrated(', $source);
         $this->assertStringContainsString("\$set('penyelenggara', \$involvement?->organizerName())", $source);
