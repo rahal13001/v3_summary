@@ -21,7 +21,8 @@ class ShieldPermissionContractTest extends TestCase
 
         $permissions = FilamentShield::getEntitiesPermissions();
 
-        $this->assertCount(109, $permissions);
+        $this->assertContains('use_ai_api', $permissions);
+        $this->assertCount(109, array_values(array_diff($permissions, ['use_ai_api'])));
         $this->assertSame([
             'view_any_role',
             'view_role',

@@ -51,6 +51,12 @@ return [
     */
 
     'channels' => [
+        'ai' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/ai-access.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
 
         'stack' => [
             'driver' => 'stack',

@@ -338,6 +338,29 @@ Bagian ini bukan perubahan yang langsung diterapkan, melainkan daftar kompatibil
 
 ## 9. Sumber Implementasi Utama
 
+## 9.1 Ekstensi akses AI readonly
+
+```mermaid
+erDiagram
+    USERS ||--o{ PERSONAL_ACCESS_TOKENS : memiliki
+    PERSONAL_ACCESS_TOKENS ||--o| AI_ACCESS_GRANTS : dibatasi
+    AI_ACCESS_GRANTS {
+        bigint id PK
+        bigint personal_access_token_id FK,UK
+        string report_scope
+        json datasets
+        json fields
+        timestamp created_at
+        timestamp updated_at
+    }
+```
+
+Relasi token-pengguna mengikuti polymorphic Sanctum. Grant hanya diterbitkan bagi User. `report_scope` bernilai `account` atau `own_related`; fields berisi allowlist per dataset. FK grant memakai cascade saat token dihapus. Migration tidak mengubah tabel bisnis. Dokumen hasil AI dibuat lokal dan tidak memiliki tabel atau penyimpanan baru pada hosting.
+
+Lihat `docs/specs/AI_READONLY_API.md` untuk diagram arsitektur dan alur, serta `docs/api/ai-v1.openapi.yaml` untuk kontrak pembacaan.
+
+### Sumber
+
 - `database/migrations/*`
 - `app/Models/*`
 - `app/Filament/Resources/*`

@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use App\Filament\Pages\AiAccess;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\Roles\RoleResource;
 use Filament\Widgets\AccountWidget;
@@ -216,6 +217,7 @@ return [
         'prefix' => 'view',
         'exclude' => [
             Dashboard::class,
+            AiAccess::class,
         ],
     ],
 
@@ -254,6 +256,7 @@ return [
     */
 
     'custom_permissions' => [
+        'use_ai_api' => 'Gunakan API AI readonly',
         'manage_all_report_evaluations' => 'Kelola seluruh Evaluasi Monev',
         'export_report_evaluations' => 'Export Evaluasi Monev',
     ],
