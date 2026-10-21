@@ -1,5 +1,14 @@
 # Menggunakan Summary dari Codex CLI dengan ChatGPT Plus
 
+## Pilih panduan sesuai terminal
+
+Panduan operasional lengkap tersedia dalam dua versi. Ikuti salah satu dari awal; environment dan konfigurasi Windows tidak otomatis menjadi konfigurasi WSL.
+
+- [Windows PowerShell: setup, penggunaan harian, ganti token/domain, dan troubleshooting](AI_MCP_WINDOWS.md).
+- [WSL/Bash: setup, penggunaan harian, ganti token/domain, dan troubleshooting](AI_MCP_WSL.md).
+
+Perintah terminal dijalankan sebelum membuka Codex. Token hanya dimasukkan melalui prompt tersembunyi di terminal, bukan melalui percakapan AI. File `.env` Laravel di hosting berbeda dari environment konektor laptop; konektor tidak membaca file `.env` secara otomatis.
+
 ## Prasyarat
 
 - Summary sudah dideploy melalui HTTPS dan API AI sudah diaktifkan pengelola.
@@ -67,8 +76,7 @@ PowerShell:
 
 ```powershell
 $env:SUMMARY_BASE_URL = 'https://domain-summary-anda'
-$secret = Read-Host 'Token akses Summary' -AsSecureString
-$env:SUMMARY_API_TOKEN = [System.Net.NetworkCredential]::new('', $secret).Password
+$env:SUMMARY_API_TOKEN = [System.Net.NetworkCredential]::new('', (Read-Host 'Token akses Summary' -AsSecureString)).Password.Trim()
 $env:SUMMARY_OUTPUT_DIR = Join-Path $HOME 'Summary-outputs'
 ```
 
@@ -140,7 +148,7 @@ Satu persiapan dataset berjalan pada satu waktu, tanpa antrean. Jika persiapan l
 
 | Kondisi | Tindakan |
 |---|---|
-| 401 | Periksa token, expiry, atau buat token pengganti |
+| 401 | Periksa token pada proses Node dan jalankan uji `CLIENT_OK` sesuai panduan OS; restart Codex dari terminal yang berhasil sebelum menyimpulkan token kedaluwarsa |
 | 403 | Periksa permission akun, dataset, kolom, dan cakupan token |
 | 422 | Periksa schema; berikan kedua batas periode dan operator yang tersedia |
 | 429 | Tunggu sesuai Retry-After |

@@ -20,6 +20,8 @@ Nama paket harus `summary-assistant` dan build menjalankan `tsc`. Output `vite b
 
 Atur SUMMARY_BASE_URL dan SUMMARY_API_TOKEN pada environment, lalu daftarkan `node /path/absolut/dist/index.js` sebagai MCP stdio. Pertahankan direktori assets bersama dist. Panduan lengkap ada di [setup Codex](../../docs/AI_CODEX_SETUP.md).
 
+Untuk langkah terurut per sistem operasi, gunakan [Windows PowerShell](../../docs/AI_MCP_WINDOWS.md) atau [WSL/Bash](../../docs/AI_MCP_WSL.md). Keduanya mencakup penyimpanan environment, uji `CLIENT_OK`, penggunaan harian, penggantian token/domain, dan penanganan error.
+
 Tools menyediakan pembacaan laporan, referensi, pengikut, dan evaluasi; pengambilan dataset sementara; penghitungan lokal; dan ekspor XLSX/MD/PDF/PPTX/DOCX hanya bila diminta. Penulisan file lokal berbeda dari perubahan data Summary, yang tidak disediakan.
 
 ## Pengujian
