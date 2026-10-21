@@ -21,7 +21,25 @@ Salin token ketika ditampilkan. Jika hilang, buat token pengganti dan cabut toke
 
 ## 2. Bangun konektor
 
-Jalankan dari folder paket di laptop:
+Jalankan dari **folder `tools/summary-assistant`**, bukan `tools` atau root proyek. Folder `tools` tidak mempunyai `package.json`; npm akan memilih paket induk Summary. Akibatnya build menjalankan Vite dan `npm test` menghasilkan `Missing script: "test"`.
+
+Untuk Terminal Laragon/CMD pada Windows dengan lokasi proyek `C:\laragon\www\summary`:
+
+```bat
+cd /d C:\laragon\www\summary\tools\summary-assistant
+node --version
+npm prefix
+npm pkg get name scripts.build scripts.test
+npm ci
+npm run build
+npm test
+```
+
+`npm prefix` harus menunjuk folder `summary-assistant`. Nama paket harus `summary-assistant`, script build harus `tsc`, dan script test harus `node --import tsx test/run.ts`. Jika build masih menampilkan `vite build`, periksa kembali folder aktif.
+
+Untuk PowerShell, pindah folder dengan `Set-Location 'C:\laragon\www\summary\tools\summary-assistant'`, lalu jalankan perintah npm yang sama.
+
+Untuk Bash/WSL, mulai dari root proyek:
 
 ```bash
 cd tools/summary-assistant
@@ -29,6 +47,8 @@ npm ci
 npm run build
 npm test
 ```
+
+Audit dependency frontend dan konektor terpisah. Jalankan `npm audit` dari folder paket yang ingin diperiksa. Peringatan vulnerability atau install script bukan penyebab error `Missing script`; jangan mengubah versi dependency dengan `npm audit fix --force` untuk memperbaiki lokasi eksekusi.
 
 Paket ini tidak perlu dijalankan di hosting. Pertahankan folder assets bersama dist karena PDF memakai font lokal dari assets.
 

@@ -6,12 +6,17 @@ Konektor MCP lokal untuk API AI readonly Summary. Codex CLI menggunakan akun Cha
 
 Node.js 22.13 atau lebih baru diperlukan.
 
+Jalankan perintah berikut dari folder `tools/summary-assistant`. Jika terminal masih berada di `tools`, pindah dahulu dengan `cd summary-assistant`. Di Terminal Laragon/CMD, lokasi lengkapnya dapat dipilih dengan `cd /d C:\laragon\www\summary\tools\summary-assistant`.
+
 ```bash
+npm pkg get name scripts.build scripts.test
 npm ci
 npm run typecheck
 npm test
 npm run build
 ```
+
+Nama paket harus `summary-assistant` dan build menjalankan `tsc`. Output `vite build` atau error `Missing script: "test"` berarti npm memilih paket frontend induk; periksa folder aktif menggunakan `npm prefix`.
 
 Atur SUMMARY_BASE_URL dan SUMMARY_API_TOKEN pada environment, lalu daftarkan `node /path/absolut/dist/index.js` sebagai MCP stdio. Pertahankan direktori assets bersama dist. Panduan lengkap ada di [setup Codex](../../docs/AI_CODEX_SETUP.md).
 
