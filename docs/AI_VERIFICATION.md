@@ -68,3 +68,20 @@ Sumber pada file fixture menunjuk URL loopback pengujian, bukan domain produksi.
 - Kemampuan narasi dan ketepatan interpretasi model tidak dijamin oleh tes deterministik. Pengguna tetap perlu meninjau narasi serta memastikan data yang diproses model sesuai izinnya.
 
 Panduan berikutnya: [setup laptop dan Codex](AI_CODEX_SETUP.md), [deployment dan rollback](AI_DEPLOYMENT.md), [spesifikasi](specs/AI_READONLY_API.md), dan [rencana lengkap](../tasks/plan.md).
+
+## Perbaikan checkbox relasi — 21 Oktober 2026
+
+Bug pembuatan token direproduksi melalui browser pada fixture lokal: memilih kolom IKU mengisi `fields.indicators` sebagai boolean, sehingga validasi menghasilkan `Dataset atau kolom tidak diizinkan: indicators`. Livewire memperlakukan checkbox sebagai pilihan jamak hanya jika nilai awalnya berupa array. Sebelumnya hanya `fields.reports` yang diinisialisasi.
+
+`AiAccess::mount()` sekarang menyiapkan array kosong untuk setiap dataset yang diizinkan akun. Pilihan awal laporan dan kolom tetap dipertahankan; dataset tambahan tidak otomatis dipilih. Pemeriksaan permission dan allowlist di TokenService tidak diubah.
+
+Bukti verifikasi:
+
+- Regression test gagal sebelum perbaikan karena state relasi bernilai null, kemudian lulus setelah perbaikan.
+- Tes mencakup inisialisasi delapan dataset, penyimpanan seluruh pilihan kolom, serta pembacaan relasi IKU memakai token yang diterbitkan halaman.
+- Nilai boolean yang dimanipulasi, kolom tidak dikenal, dan permission yang dicabut tetap ditolak tanpa menerbitkan token.
+- Browser berhasil mencentang seluruh dataset/kolom yang tersedia dan membuat token. Token tersembunyi setelah reload; baris token tetap tersimpan. Console tidak memiliki error/warning pada pemeriksaan terakhir.
+- `php artisan test --compact`: **157 tes, 726 assertion lulus**. Pint untuk kedua file PHP yang diubah juga lulus.
+- Smoke MCP–HTTPS–Laravel pada fixture baru menghasilkan dua laporan, 25 kehadiran, dan lima format; perubahan ini tidak menyentuh kode konektor atau renderer.
+
+Setelah kode web diperbarui di hosting, muat ulang halaman Akses AI dan buat token baru dengan dataset serta kolom relasi yang diperlukan. Ganti token pada environment laptop lalu mulai ulang Codex. Token lama tidak memperoleh cakupan tambahan secara otomatis. Perbaikan ini tidak membutuhkan migration atau rebuild konektor npm. Deployment tetap dilakukan pengguna melalui prosedur Git/SSH; pengujian perbaikan memakai data sintetis lokal.

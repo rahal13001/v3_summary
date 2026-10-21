@@ -42,6 +42,9 @@ class AiAccess extends Page
     public function mount(): void
     {
         abort_unless(static::canAccess(), 403);
+        foreach (array_keys($this->availableDatasets()) as $dataset) {
+            $this->fields[$dataset] ??= [];
+        }
     }
 
     public function issue(): void
