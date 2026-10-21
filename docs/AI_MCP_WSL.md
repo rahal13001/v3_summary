@@ -305,7 +305,7 @@ Baris pemuatan bersyarat di `.bashrc` boleh dihapus; tanpa file, baris itu tidak
 | `tokenTerisi:false` | Ulangi input token dan `export SUMMARY_API_TOKEN` pada Bash yang akan membuka Codex, atau muat file environment tersimpan. |
 | `Invalid URL` / URL `null` | Isi URL HTTPS lengkap di environment Linux; konfigurasi Windows tidak otomatis terwariskan. |
 | `CLIENT_ERROR: Summary HTTP 401` | Periksa token lengkap, masa berlaku, pencabutan, dan kecocokan dengan web tujuan. Uji client sebelum memulai Codex. |
-| `CLIENT_OK`, tetapi Codex 401 | Keluar dan mulai ulang Codex dari Bash yang berhasil. Periksa config Linux aktif, path Node Linux, dan nilai tetap lama pada `mcp_servers.summary.env`. |
+| `CLIENT_OK`, tetapi Codex 401 | Dari Bash yang berhasil, uji sesi baru dengan `codex --no-daemon` jika opsi tersedia. Periksa config Linux aktif, path Node Linux, dan nilai tetap lama pada `mcp_servers.summary.env`. |
 | HTTP 403 / dataset tidak diizinkan | Periksa izin akun dan cakupan dataset/kolom/token; untuk bug checkbox relasi, pastikan perbaikan web terpasang dan buat token baru setelah memuat ulang halaman. |
 | HTTP 503 | Pengelola memeriksa `AI_API_ENABLED=true` dan cache Laravel pada hosting. Mengubah environment WSL tidak mengaktifkan API server. Lihat [deployment](AI_DEPLOYMENT.md). |
 | HTTP 422 / 429 | Periksa schema, operator serta kedua batas tanggal / tunggu sesuai `Retry-After`. |
@@ -318,8 +318,29 @@ Baris pemuatan bersyarat di `.bashrc` boleh dihapus; tanpa file, baris itu tidak
 
 Jika perlu bantuan, kirim hasil pemeriksaan URL/`tokenTerisi`, pesan `CLIENT_OK`/error, serta `command -v node codex`. Jangan kirim token, isi file environment, atau dump seluruh environment.
 
+### CLIENT_OK tetapi Codex tetap 401: periksa daemon
+
+Codex CLI dapat memakai daemon bersama yang tetap berjalan setelah antarmuka CLI ditutup. Environment Bash yang diperbarui tidak otomatis mengubah environment proses lama. Untuk menguji apakah perbedaan tersebut menyebabkan kegagalan:
+
+1. Keluar dari Codex ke Bash yang menghasilkan `CLIENT_OK`.
+2. Periksa dukungan opsi pada versi Linux yang terpasang:
+
+```bash
+codex --help | rg -- 'no-daemon'
+```
+
+Jika `rg` tidak terpasang, baca `codex --help` langsung. Jika opsi tersedia, jalankan:
+
+```bash
+codex --no-daemon
+```
+
+3. Minta **“Panggil ulang summary_capabilities dan summary_schema sekarang; jangan gunakan hasil pemeriksaan sebelumnya.”**
+4. Jika berhasil, gunakan cara tersebut untuk sesi Summary berikutnya setelah environment dimuat. Jika tetap gagal, periksa config/runtime aktif; penyebab daemon belum terbukti. Opsi ini tidak menghentikan daemon atau sesi lain. Jangan membunuh seluruh proses Node/Codex sebagai langkah diagnosis.
+
 ## Rujukan
 
 - [Konfigurasi MCP resmi Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli): konfigurasi stdio, `env_vars`, serta lokasi config default.
 - [Autentikasi Codex](https://learn.chatgpt.com/docs/auth).
+- [Referensi CLI resmi: opsi `--no-daemon`](https://learn.chatgpt.com/docs/cli/reference).
 - [Panduan PowerShell](AI_MCP_WINDOWS.md), [analisis dan batas dataset](AI_CODEX_SETUP.md), [deployment API](AI_DEPLOYMENT.md).

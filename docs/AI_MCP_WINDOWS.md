@@ -159,6 +159,8 @@ Penyimpanan User menyimpan token sebagai teks biasa dalam environment akun Windo
 
 Pengaturan User tidak memperbarui proses yang sudah berjalan. Tutup seluruh jendela Windows Terminal/PowerShell, lalu buka ulang dari menu Start. Jika menggunakan terminal VS Code atau aplikasi lain, mulai ulang aplikasi induknya juga. Periksa kembali langkah 5 pada terminal baru. Jika environment masih lama, keluar lalu masuk kembali akun Windows.
 
+Codex CLI juga dapat memakai daemon bersama yang tetap berjalan meskipun terminal ditutup. Karena itu, membuka ulang terminal saja belum tentu memperbarui environment proses MCP. Jika uji Node berhasil tetapi tool Codex masih 401, ikuti pemeriksaan daemon pada langkah 10.
+
 ## 7. Penggunaan harian dan dokumen
 
 Jika pengaturan sudah tersimpan, cukup buka PowerShell baru lalu:
@@ -260,7 +262,7 @@ Mulai ulang terminal/aplikasi lain yang mungkin masih memegang token. Untuk menc
 | `tokenTerisi:false` | Token tidak ada pada proses Node saat ini. Ulangi langkah 4 pada PowerShell yang sama, lalu uji. Daftar `env_vars` saja tidak mengisi token. |
 | `Invalid URL` atau URL `null` | Isi `SUMMARY_BASE_URL` dengan URL HTTPS lengkap pada terminal yang sama. |
 | `CLIENT_ERROR: Summary HTTP 401` | Pastikan token lengkap dari web tujuan, masih aktif, dan belum kedaluwarsa. Ulangi pengisian token lalu uji; baru buat pengganti jika diperlukan. |
-| `CLIENT_OK`, tetapi MCP Codex masih 401 | Keluar dari Codex lalu mulai kembali dari terminal yang menghasilkan `CLIENT_OK`. Periksa path/config aktif dan nilai tetap lama di `mcp_servers.summary.env`. Mulai ulang aplikasi induk bila memakai terminal terintegrasi. |
+| `CLIENT_OK`, tetapi MCP Codex masih 401 | Uji sesi baru memakai `codex --no-daemon` dari terminal yang menghasilkan `CLIENT_OK`; daemon bersama dapat tetap memegang environment lama. Lihat langkah di bawah. Periksa juga config aktif dan nilai tetap lama di `mcp_servers.summary.env`. |
 | PowerShell HTTP 200 tetapi Codex 401 | HTTP 200 hanya membuktikan permintaan tersebut diterima. Uji Node pada langkah 5, lalu pastikan Codex dimulai dari terminal yang sama. |
 | HTTP 403 | Periksa izin akun dan dataset/kolom/cakupan token. Jika membuat token baru, isi token baru pada environment. |
 | `Dataset atau kolom tidak diizinkan: indicators` | Pastikan perbaikan checkbox relasi sudah terpasang di web, muat ulang halaman, lalu buat token yang mengizinkan dataset dan kolom relasi. Periksa capabilities/schema. |
@@ -274,8 +276,33 @@ Mulai ulang terminal/aplikasi lain yang mungkin masih memegang token. Untuk menc
 
 Jika perlu bantuan, kirim hasil `tokenTerisi`, `CLIENT_OK`/pesan error, serta path executable yang relevan. Jangan kirim token, dump environment lengkap, atau isi konfigurasi yang mengandung rahasia.
 
+### CLIENT_OK tetapi Codex tetap 401: periksa daemon
+
+`CLIENT_OK` membuktikan client pada terminal saat itu berhasil. MCP Codex dapat berjalan sebagai anak proses daemon bersama yang dimulai sebelumnya, sehingga memulai ulang antarmuka CLI belum tentu memulai ulang proses yang menerima environment.
+
+1. Keluar dari Codex sampai kembali ke PowerShell yang sudah menghasilkan `CLIENT_OK`.
+2. Pastikan versi terpasang menyediakan opsi ini:
+
+```powershell
+codex --help | Select-String 'no-daemon'
+```
+
+3. Jika tersedia, mulai sesi baru tanpa daemon bersama:
+
+```powershell
+codex --no-daemon
+```
+
+4. Di sesi baru, minta: **“Panggil ulang summary_capabilities dan summary_schema sekarang. Jangan gunakan hasil pemeriksaan percakapan sebelumnya.”**
+5. Jika berhasil, gunakan `codex --no-daemon` untuk penggunaan Summary dari terminal yang sudah memuat environment, termasuk setelah mengganti token atau domain. Ini tidak mematikan daemon atau sesi lain.
+
+Jika opsi belum tersedia, periksa versi/pembaruan Codex melalui prosedur instalasi yang digunakan. Jangan menghentikan seluruh proses Node/Codex untuk mencoba memperbaiki satu konektor.
+
+Jika masih 401, penyebab belum terbukti berasal dari daemon. Catat hasil tool terbaru dan periksa executable/config aktif serta apakah client dan MCP benar-benar menggunakan URL/token yang sama. Jangan menganggap token kedaluwarsa hanya karena MCP 401 sementara uji client berhasil.
+
 ## Rujukan
 
 - [Konfigurasi MCP resmi Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli): stdio, `env_vars`, lokasi konfigurasi, `/mcp`.
 - [Autentikasi Codex](https://learn.chatgpt.com/docs/auth).
+- [Referensi CLI resmi: opsi `--no-daemon`](https://learn.chatgpt.com/docs/cli/reference).
 - [Panduan WSL](AI_MCP_WSL.md), [analisis dan batas dataset](AI_CODEX_SETUP.md), [deployment API](AI_DEPLOYMENT.md).

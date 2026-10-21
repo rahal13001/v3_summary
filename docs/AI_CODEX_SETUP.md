@@ -84,6 +84,8 @@ Gunakan domain dasar aplikasi, termasuk subfolder jika ada, tanpa `/api/ai/v1`. 
 
 Environment hanya berlaku pada proses terminal dan turunannya. Jika memakai pengelola kredensial lokal, pastikan nilai diteruskan ke proses konektor tanpa dicetak.
 
+Codex CLI dapat memakai daemon bersama yang masih memegang environment lama. Jika uji client langsung menghasilkan `CLIENT_OK` tetapi MCP tetap 401, uji sesi baru dengan `codex --no-daemon` dari terminal yang sudah berhasil, bila opsi tersedia pada `codex --help`. Langkah diagnosis lengkap ada pada panduan masing-masing OS di atas.
+
 ## 4. Daftarkan MCP pada Codex
 
 Tambahkan atau gabungkan blok berikut ke konfigurasi Codex milik Anda. Gunakan path absolut yang benar untuk laptop; jangan menimpa pengaturan lain.
