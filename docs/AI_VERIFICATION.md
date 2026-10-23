@@ -85,3 +85,21 @@ Bukti verifikasi:
 - Smoke MCP–HTTPS–Laravel pada fixture baru menghasilkan dua laporan, 25 kehadiran, dan lima format; perubahan ini tidak menyentuh kode konektor atau renderer.
 
 Setelah kode web diperbarui di hosting, muat ulang halaman Akses AI dan buat token baru dengan dataset serta kolom relasi yang diperlukan. Ganti token pada environment laptop lalu mulai ulang Codex. Token lama tidak memperoleh cakupan tambahan secara otomatis. Perbaikan ini tidak membutuhkan migration atau rebuild konektor npm. Deployment tetap dilakukan pengguna melalui prosedur Git/SSH; pengujian perbaikan memakai data sintetis lokal.
+
+## Tautan sumber laporan untuk browser — 23 Oktober 2026
+
+Penyebab tautan yang keliru ada pada dua lapisan: serializer API mengisi `source.url` dengan endpoint API bernomor, sedangkan pengumpulan dataset konektor membuat ulang URL yang sama dari ID. Endpoint ini membutuhkan bearer token, bukan session browser; tanda kurung penutup yang ikut tersalin juga membuat path tidak cocok dengan route.
+
+Perbaikan menggunakan halaman laporan Filament yang sudah ada (`/laporan-5w1h/{slug}`). Serializer memakai pembuat URL resource; konektor menormalisasi sumber daftar/detail ke halaman web pada base URL yang dikonfigurasi, termasuk subfolder. Dataset mempertahankan sumber yang sudah dinormalisasi. Slug tidak tersedia atau tidak aman mengarah ke daftar laporan. Instruksi MCP meminta model menggunakan `source.url`; Markdown yang dihasilkan memakai tautan eksplisit dengan pembatas URL.
+
+Bukti verifikasi:
+
+- Dua tes regresi Node gagal sebelum perubahan lalu lulus sesudahnya: normalisasi sumber pada detail/daftar/dataset, serta penolakan domain eksternal dan traversal pada tautan sumber.
+- **18 tes konektor lulus**, termasuk isi sumber pada XLSX, MD, PDF, PPTX, DOCX dan protokol MCP. `npm run typecheck` serta `npm run build` lulus.
+- **162 tes Laravel, 741 assertions lulus** pada SQLite in-memory. Lima tes sumber mencakup respons API, redirect login beserta intended URL, pembukaan laporan oleh pembaca berizin, penolakan akun nonaktif/tanpa permission, dan isolasi bearer AI dari login web.
+- Pint untuk controller API dan tes sumber lulus. OpenAPI, tautan dokumentasi lokal, dan pemeriksaan whitespace juga lulus.
+- Satu run awal PHP yang bertumpuk dengan run lain mengalami tabrakan rename cache compiled view Windows. Run PHPUnit terpisah dan suite penuh setelahnya lulus; tidak ada pengurangan assertion atau perubahan policy untuk meloloskan tes.
+
+Tidak ada route publik baru, migration, perubahan policy, atau perubahan laporan bisnis. ID tetap tersedia bagi operasi internal API dan pencocokan sumber; menyembunyikan ID dari URL hasil bukan pengganti autentikasi/otorisasi. Koneksi browser memakai login serta izin akun web, bukan token API dalam tautan.
+
+Perubahan belum dideploy atau dipush. Konektor laptop perlu diperbarui/dibangun ulang, Codex dimulai ulang, dan data diambil ulang. Konektor baru tetap dapat memperbaiki tautan dari respons server lama jika slug tersedia; server juga perlu diperbarui agar kontrak sumber benar bagi semua client. Dokumen lama tidak ditulis ulang otomatis. Graphify yang tersedia menghubungkan ViewReport dengan resource/policy tetapi mendahului fitur MCP; kode aktual dan tes dipakai untuk menelusuri lapisan API/konektor yang belum ada pada graph.

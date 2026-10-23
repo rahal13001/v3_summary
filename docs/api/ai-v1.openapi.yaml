@@ -1155,7 +1155,7 @@
           "url": {
             "type": "string",
             "format": "uri",
-            "description": "URL API terautentikasi, bukan tautan publik."
+            "description": "URL halaman web laporan berbasis slug; memerlukan login browser dan izin akun Summary. Bukan endpoint API atau tautan akses publik. Bila slug tidak tersedia, mengarah ke daftar laporan."
           },
           "updated_at": {
             "type": [

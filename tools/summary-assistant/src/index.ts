@@ -20,7 +20,10 @@ export function createServer(client: SummaryClient, store: DatasetStore, outputR
       + 'Baca rincian laporan relevan sebelum menyusun narasi; sampel bukan seluruh data. '
       + 'Dataset parsial tidak boleh disebut lengkap. Tidak menyimpulkan pencapaian IKU tanpa target dan metode. '
       + 'Jawab di terminal bila format tidak disebutkan. Buat dokumen hanya jika diminta. '
-      + 'Citations memakai ID sumber dalam dataset. Tidak ada akses tulis Summary atau fallback model berbayar.',
+      + 'Citations memakai source.url untuk tautan halaman web; jangan membuat tautan API dari ID atau menyertakan token di URL. '
+      + 'Tulis tautan Markdown dengan benar: [Lihat laporan](source.url), tanpa tanda kurung penutup menjadi bagian URL. '
+      + 'ID hanya untuk pencocokan sumber internal. Halaman sumber memerlukan login dan izin akun web. '
+      + 'Tidak ada akses tulis Summary atau fallback model berbayar.',
   });
   const output = async (operation: () => Promise<unknown> | unknown) => {
     try { return { content: [{ type: 'text' as const, text: JSON.stringify(await operation()) }] }; }

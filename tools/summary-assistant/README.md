@@ -24,6 +24,8 @@ Untuk langkah terurut per sistem operasi, gunakan [Windows PowerShell](../../doc
 
 Tools menyediakan pembacaan laporan, referensi, pengikut, dan evaluasi; pengambilan dataset sementara; penghitungan lokal; dan ekspor XLSX/MD/PDF/PPTX/DOCX hanya bila diminta. Penulisan file lokal berbeda dari perubahan data Summary, yang tidak disediakan.
 
+Tautan sumber menggunakan halaman web laporan berbasis slug dan memerlukan login serta izin akun Summary. Konektor tidak menambahkan token pada tautan atau membuat tautan sumber dari ID API. Setelah memperbarui konektor, build ulang, mulai ulang Codex, dan ambil ulang dataset; lihat [pembaruan tautan sumber](../../docs/AI_CODEX_SETUP.md#memperbarui-tautan-sumber-dari-versi-lama).
+
 ## Pengujian
 
 `npm test` memeriksa HTTP client, kapasitas dan expiry dataset, penghitungan, lima format, sumber, path, OpenAPI, dan protokol MCP.

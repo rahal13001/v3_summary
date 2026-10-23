@@ -133,6 +133,7 @@ Codex membaca capabilities/schema, menyiapkan dataset, menghitung rekap lokal, m
 
 ## Membaca hasil
 
+- Tautan sumber membuka halaman laporan Summary berbasis slug, misalnya `/laporan-5w1h/kegiatan-layanan`. Browser meminta login jika belum ada session, kemudian memeriksa izin akun. Jangan memasukkan token pada URL. ID tetap tersedia sebagai identitas sumber internal, bukan bagian tautan API dalam hasil.
 - Default keluaran adalah jawaban terminal. File hanya dibuat jika diminta.
 - Lokasi file dikembalikan oleh tool pembuatan dokumen.
 - XLSX berisi data lengkap yang diambil; sheet relasi mencegah penggandaan baris laporan.
@@ -160,3 +161,18 @@ Satu persiapan dataset berjalan pada satu waktu, tanpa antrean. Jika persiapan l
 | Batas Plus tercapai | Tunggu pemulihan batas; tidak perlu mengisi API key |
 
 Model dapat berbeda dalam kedalaman analisis dan penyajian. Aturan izin, periode, rekap, dan validasi sumber tetap sama. Data yang dijadikan konteks model dapat diproses melalui layanan penyedia AI.
+
+## Memperbarui tautan sumber dari versi lama
+
+Perbarui source server melalui prosedur [deployment](AI_DEPLOYMENT.md) agar respons `source.url` menunjuk halaman web laporan. Perubahan ini tidak membutuhkan migration, token baru, atau perubahan izin. Jangan mengubah endpoint API menjadi akses browser publik.
+
+Pada laptop, ambil commit konektor yang sudah diperbarui lalu jalankan dari `tools/summary-assistant`:
+
+```bash
+npm run build
+npm test
+```
+
+Keluar dari sesi Codex, muat environment sesuai panduan Windows/WSL, kemudian mulai sesi baru dengan `codex --no-daemon` pada versi yang mendukungnya. Minta capabilities/schema dan ambil ulang data kegiatan agar konteks tidak memakai URL lama. Konektor baru juga mengubah tautan sumber respons server lama menjadi halaman web berdasarkan slug yang tersedia; pembaruan server tetap diperlukan agar semua client menerima kontrak sumber yang sama.
+
+Dokumen yang sudah dibuat dan pesan percakapan sebelumnya tidak diubah otomatis. Buat ulang dokumen bila ingin mengganti tautan lama. Jika slug tidak tersedia atau tidak aman, konektor memakai tautan daftar laporan; cari kegiatan di sana memakai informasi kegiatan yang tersedia.

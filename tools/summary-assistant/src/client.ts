@@ -33,8 +33,17 @@ export class SummaryClient {
     this.sleeper = options.sleep ?? (ms => delay(ms));
   }
 
-  reportUrl(id: number): string {
-    return this.url(`reports/${id}`).toString();
+  reportUrl(slug?: unknown): string {
+    const root = this.baseUrl.toString().replace(/\/$/, '');
+    const safeSlug = typeof slug === 'string' && /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/i.test(slug) && !/^\d+$/.test(slug);
+    return `${root}/laporan-5w1h${safeSlug ? `/${encodeURIComponent(slug)}` : ''}`;
+  }
+
+  private browserSource(value: unknown): unknown {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+    const row = value as Record<string, unknown>;
+    const source = row.source && typeof row.source === 'object' ? row.source as Record<string, unknown> : {};
+    return { ...row, source: { url: this.reportUrl(row.slug), updated_at: source.updated_at ?? null } };
   }
 
   private url(path: string): URL {
@@ -67,6 +76,8 @@ export class SummaryClient {
       const result = await this.request(url);
       if (['reports', 'references', 'evaluations', 'followers'].includes(endpoint) && !Array.isArray(result.data)) throw new Error('Daftar data Summary tidak sah.');
       if (['capabilities', 'schema', 'report'].includes(endpoint) && (result.data === null || typeof result.data !== 'object' || Array.isArray(result.data))) throw new Error('Objek data Summary tidak sah.');
+      if (endpoint === 'reports') result.data = (result.data as unknown[]).map(row => this.browserSource(row));
+      if (endpoint === 'report') result.data = this.browserSource(result.data);
       return result;
     } finally {
       const waiting = this.waiting.shift();

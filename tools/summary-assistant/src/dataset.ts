@@ -87,7 +87,7 @@ export class DatasetStore {
       let added = 0;
       for (const raw of rows) {
         if (seen.has(raw.id)) { changed = true; continue; }
-        const row = { ...raw, source: { url: client.reportUrl(raw.id), updated_at: raw.source?.updated_at ?? null } };
+        const row = raw;
         if (raw._relation_meta && typeof raw._relation_meta === 'object') {
           nestedPartial ||= Object.values(raw._relation_meta).some(meta => meta && typeof meta === 'object' && 'has_more' in meta && meta.has_more === true);
         }

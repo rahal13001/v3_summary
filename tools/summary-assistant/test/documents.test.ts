@@ -15,10 +15,10 @@ export const fixture: Dataset = {
   records: [
     { id: 1, slug: 'juli', what: '=HYPERLINK("https://evil.test")', when: '2026-07-01', total_peserta: '10',
       indicators: [{ id: 7, nama_iku: 'IKU Layanan' }], how: 'Pelayanan berjalan baik.',
-      source: { url: 'https://summary.test/api/ai/v1/reports/1', updated_at: '2026-07-02T00:00:00Z' } },
+      source: { url: 'https://summary.test/laporan-5w1h/juli', updated_at: '2026-07-02T00:00:00Z' } },
     { id: 2, slug: 'agustus', what: 'Kegiatan Agustus', when: '2026-08-20', total_peserta: 'tidak tersedia',
       indicators: [{ id: 7, nama_iku: 'IKU Layanan' }, { id: 8, nama_iku: 'IKU Kerja Sama' }],
-      source: { url: 'https://summary.test/api/ai/v1/reports/2' } },
+      source: { url: 'https://summary.test/laporan-5w1h/agustus' } },
   ],
 };
 
@@ -31,10 +31,16 @@ test('five formats contain consistent counts, sources, and safe literal cells', 
     const file = (extension: string) => output.files.find(name => name.endsWith(`.${extension}`))!;
     const markdown = await readFile(file('md'), 'utf8');
     assert.match(markdown, /Laporan unik: 2/);
-    assert.match(markdown, /api\/ai\/v1\/reports\/1/);
+    assert.match(markdown, /laporan-5w1h\/juli/);
+    assert.ok(markdown.includes('[Lihat laporan](<https://summary.test/laporan-5w1h/juli>)'));
+    assert.doesNotMatch(markdown, /\/api\/ai\//);
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(file('xlsx'));
     assert.equal(workbook.getWorksheet('Data Kegiatan')?.rowCount, 3);
+    const allCells: string[] = [];
+    workbook.eachSheet(sheet => sheet.eachRow(row => row.eachCell(cell => allCells.push(String(cell.value)))));
+    assert.match(allCells.join(' '), /laporan-5w1h\/juli/);
+    assert.doesNotMatch(allCells.join(' '), /\/api\/ai\//);
     const literal = workbook.getWorksheet('Data Kegiatan')?.getRow(2).values;
     assert.ok(JSON.stringify(literal).includes('HYPERLINK'));
     workbook.eachSheet(sheet => sheet.eachRow(row => row.eachCell(cell => assert.notEqual(cell.type, ExcelJS.ValueType.Formula))));
@@ -44,6 +50,8 @@ test('five formats contain consistent counts, sources, and safe literal cells', 
       const text = (await Promise.all(xmlFiles.map(name => zip.file(name)!.async('string')))).join('\n');
       assert.match(text, /Kegiatan IKU Triwulan III 2026/);
       assert.match(text, /summary\.test/);
+      assert.match(text, /laporan-5w1h\/juli/);
+      assert.doesNotMatch(text, /\/api\/ai\//);
     }
     const loading = getDocument({ data: new Uint8Array(await readFile(file('pdf'))), useSystemFonts: true });
     const pdf = await loading.promise;
@@ -51,6 +59,8 @@ test('five formats contain consistent counts, sources, and safe literal cells', 
     for (let page = 1; page <= pdf.numPages; page++) text.push((await (await pdf.getPage(page)).getTextContent()).items.map(item => 'str' in item ? item.str : '').join(' '));
     assert.match(text.join(' '), /Laporan unik: 2/);
     assert.match(text.join(' '), /summary\.test/);
+    assert.match(text.join(' '), /laporan-5w1h\/juli/);
+    assert.doesNotMatch(text.join(' '), /\/api\/ai\//);
     await loading.destroy();
     const second = await createDocuments(fixture, { title: 'Kegiatan IKU Triwulan III 2026', groupBy: 'indicators', formats: ['md'], sections: [] }, root);
     assert.notEqual(output.directory, second.directory);

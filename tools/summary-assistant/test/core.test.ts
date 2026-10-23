@@ -32,6 +32,37 @@ test('client retries rate limits but not authorization failures', async () => {
   assert.equal(calls, 3);
 });
 
+test('report sources use browser slugs across detail, lists and collected datasets', async () => {
+  const record = { id: 2606, slug: 'kegiatan-september', what: 'Kegiatan',
+    source: { url: 'https://evil.test/api/ai/v1/reports/2606', updated_at: '2026-09-15T00:00:00Z' } };
+  const api = new SummaryClient('https://summary.test/summary', 'secret', { fetch: async url => {
+    const pathname = new URL(String(url)).pathname;
+    if (pathname.endsWith('/schema')) return Response.json({ data: { reports: { what: {} } } });
+    if (pathname.endsWith('/reports/2606')) return Response.json({ data: record });
+    return Response.json({ data: [record], meta: { page: 1, per_page: 100, total: 1, has_more: false } });
+  } });
+  const expected = 'https://summary.test/summary/laporan-5w1h/kegiatan-september';
+  const detail = await api.read('report', {}, 2606);
+  assert.equal((detail.data as typeof record).source.url, expected);
+  const list = await api.read('reports');
+  assert.equal((list.data as typeof record[])[0]!.source.url, expected);
+  const store = new DatasetStore();
+  const prepared = await store.prepare(api, {});
+  assert.equal(store.get(prepared.datasetId).records[0]!.source?.url, expected);
+  assert.equal(store.get(prepared.datasetId).records[0]!.source?.updated_at, record.source.updated_at);
+});
+
+test('missing or unsafe slugs never produce API, external, or traversal source links', async () => {
+  const rows = [undefined, '', '..', '../api/ai/v1/reports/2606', 'https://evil.test', 'bad)slug'].map((slug, index) => ({
+    id: index + 1, slug, source: { url: 'https://evil.test/' },
+  }));
+  const client = new SummaryClient('https://summary.test/summary/', 'secret', { fetch: async () => Response.json({ data: rows }) });
+  const result = await client.read('reports');
+  for (const row of result.data as { source: { url: string } }[]) {
+    assert.equal(row.source.url, 'https://summary.test/summary/laporan-5w1h');
+  }
+});
+
 test('collection deduplicates IDs and reports partial data at capacity', async () => {
   const client = new SummaryClient('https://summary.test', 'secret', { fetch: async url => String(url).includes('/schema') ? Response.json({ data: { reports: { what: {} }, indicators: { id: {} } } }) : Response.json({
     data: [

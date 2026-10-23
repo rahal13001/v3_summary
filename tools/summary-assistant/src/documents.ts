@@ -63,7 +63,10 @@ function markdown(dataset: Dataset, result: Analysis, input: ParsedInput): strin
     '| Kelompok | Jumlah laporan | ID laporan |', '| --- | ---: | --- |',
     ...result.groups.map(group => `| ${escape(group.label)} | ${group.count} | ${group.reportIds.join(', ')} |`)];
   for (const section of input.sections) lines.push('', `## ${escape(section.heading)} — Interpretasi AI`, '', escape(section.text), '', `Sumber: ${section.sourceIds.join(', ') || 'Tidak ada rujukan khusus'}`);
-  lines.push('', '## Sumber', '', ...sources(dataset).map(source => `- ${escape(source)}`));
+  lines.push('', '## Sumber', '', ...dataset.records.map(row => {
+    const link = row.source?.url ? `[Lihat laporan](<${row.source.url}>)` : 'URL sumber tidak tersedia';
+    return `- Laporan ${row.id}: ${link}; pembaruan: ${escape(row.source?.updated_at ?? 'tidak tersedia')}`;
+  }));
   return `${lines.join('\n')}\n`;
 }
 

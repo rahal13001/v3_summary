@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Filament\Resources\ReportResource;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Services\Ai\Access;
@@ -184,7 +185,11 @@ class AiController extends Controller
                 $data[$dataset] = ['kinds' => $kinds];
             }
         }
-        $data['source'] = ['url' => url('/api/ai/v1/reports/'.$report->id), 'updated_at' => $report->updated_at?->toIso8601String()];
+        $data['source'] = [
+            'url' => ReportResource::getUrl(filled($report->slug) ? 'view' : 'index',
+                filled($report->slug) ? ['record' => $report] : [], panel: 'admin'),
+            'updated_at' => $report->updated_at?->toIso8601String(),
+        ];
 
         return $data;
     }
